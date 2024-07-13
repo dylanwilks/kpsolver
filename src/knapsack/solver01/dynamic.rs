@@ -2,10 +2,14 @@ use ndarray::ArrayD;
 use ndarray::IxDyn;
 
 use crate::knapsack::ItemBound;
+use crate::knapsack::ItemType;
 use crate::knapsack::Knapsack;
 
-pub fn dynamic<const S: usize>(items: &mut [&mut ItemBound<usize, S>],
-                               knapsack: &mut Knapsack<usize, S>) {
+pub fn dynamic<T, const S: usize>(items: &mut [&mut ItemBound<T, S>],
+                                  knapsack: &mut Knapsack<T, S>) 
+where
+    T: ItemType<S> + Into<usize>,
+{
     //find and create the dimensions of the memo matrix
     let mut dim: Vec<usize> = (0..=S).collect();
     for item in items.iter() {
@@ -14,18 +18,18 @@ pub fn dynamic<const S: usize>(items: &mut [&mut ItemBound<usize, S>],
 
     dim[0] += 1;
     let mut capacity = vec![0; S];
-    capacity.clone_from_slice(knapsack.capacity.as_slice());
+    capacity.clone_from_slice(knapsack.capacity.map(|x| x.into()).as_slice());
     let weight = knapsack.read_weights();
     for i in 0..S {
-        if weight[i] > capacity[i] {
+        if weight[i].into() > capacity[i] {
             capacity[i] = 0;
         } else {
-            capacity[i] -= weight[i];
+            capacity[i] -= weight[i].into();
         }
     }
 
     for (i, cap) in capacity.iter().enumerate() {
-        dim[i+1] = cap + 1;
+        dim[i+1] = *cap + 1;
     }
 
     let mut memo = ArrayD::<f64>::zeros(IxDyn(&dim));
@@ -42,11 +46,11 @@ pub fn dynamic<const S: usize>(items: &mut [&mut ItemBound<usize, S>],
                 let mut excess_weight: bool = false;
                 //find ref_index by decreasing corresponding elements of index with item weights
                 for i in 1..=S {
-                    if item.data.weights[i-1] > index[i] {
+                    if item.data.weights[i-1].into() > index[i] {
                         excess_weight = true;
                         break;
                     } else {
-                        ref_index[i] = index[i] - item.data.weights[i-1];
+                        ref_index[i] = index[i] - item.data.weights[i-1].into();
                     }
                 }
                 
@@ -100,7 +104,7 @@ pub fn dynamic<const S: usize>(items: &mut [&mut ItemBound<usize, S>],
             if current_val != memo[IxDyn(&index)] {
                 item_quantity[i] += 1;
                 for j in 1..=S {
-                    index[j] -= item.data.weights[j - 1];
+                    index[j] -= item.data.weights[j - 1].into();
                 }
             }
 
@@ -109,7 +113,7 @@ pub fn dynamic<const S: usize>(items: &mut [&mut ItemBound<usize, S>],
     }
 
     for (i, quantity) in item_quantity.iter().enumerate() {
-        knapsack.add_item(ItemBound::<usize, S> {
+        knapsack.add_item(ItemBound::<T, S> {
                 data: items[i].data.clone(),
                 quantity: *quantity,
             }
@@ -169,5 +173,25 @@ mod test {
         if let Some(x) = knapsack_items.get(&item3.data.to_key()) {
             assert_eq!(x.quantity, 0);
         }
+    }
+
+    #[test]
+    fn dynamic_test_3() {
+        let mut item1 = ItemBound::<usize, 1>::new(55.0, 1, [95]);
+        let mut item2 = ItemBound::<usize, 1>::new(10.0, 1, [4]);
+        let mut item3 = ItemBound::<usize, 1>::new(47.0, 1, [60]);
+        let mut item4 = ItemBound::<usize, 1>::new(5.0, 1, [32]);
+        let mut item5 = ItemBound::<usize, 1>::new(4.0, 1, [23]);
+        let mut item6 = ItemBound::<usize, 1>::new(50.0, 1, [72]);
+        let mut item7 = ItemBound::<usize, 1>::new(8.0, 1, [80]);
+        let mut item8 = ItemBound::<usize, 1>::new(61.0, 1, [62]);
+        let mut item9 = ItemBound::<usize, 1>::new(85.0, 1, [65]);
+        let mut item10 = ItemBound::<usize, 1>::new(87.0, 1, [46]);
+        let mut knapsack = Knapsack::<usize, 1>::new([269]);
+        let mut items = [&mut item1, &mut item2, &mut item3,
+                         &mut item4, &mut item5, &mut item6,
+                         &mut item7, &mut item8, &mut item9, &mut item10];
+        dynamic(&mut items, &mut knapsack);
+        assert_eq!(knapsack.read_value(), 295.0);
     }
 }

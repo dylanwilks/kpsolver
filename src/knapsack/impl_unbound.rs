@@ -200,6 +200,7 @@ mod tests {
         assert_eq!(unbound * unbound, unbound);
     }
 
+    #[test]
     fn test_unbound_mul_usize() {
         assert_eq!(unbound * TEST_USIZE, unbound);
     }

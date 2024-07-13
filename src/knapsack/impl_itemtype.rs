@@ -103,7 +103,6 @@ impl_float_ItemType!(f32, f64);
 #[cfg(test)]
 mod test {
     use super::*;
-    use std::collections::HashMap;
 
     #[test]
     fn test_to_key_usize() {
