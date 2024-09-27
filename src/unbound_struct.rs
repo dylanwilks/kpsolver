@@ -8,22 +8,32 @@ use std::cmp::Ordering;
 #[allow(non_camel_case_types)]
 #[derive(Debug, Eq)]
 pub struct unbound;
-
 pub trait Quantity {
-    fn is_unbound(&self) -> bool;
-}
+    //Required method
+    fn identity() -> Self;
 
-impl Quantity for usize {
+    //Provided method
     fn is_unbound(&self) -> bool {
         false
     }
 }
 
 impl Quantity for unbound {
+    fn identity() -> Self {
+        unbound
+    }
+
     fn is_unbound(&self) -> bool {
         true
     }
 }
+
+impl Quantity for usize {
+    fn identity() -> Self {
+        1
+    }
+}
+//maybe it could work with floats?
 
 //Overloading for the unbound type (unbound + T = unbound, unbound <= usize == true)
 impl<N> Add<N> for unbound 
@@ -124,33 +134,33 @@ where
 }
 
 #[cfg(test)]
-mod tests {
+mod test {
     use super::*;
     const TEST_USIZE: usize = 1;
 
     #[test]
-    fn test_is_unbound() {
+    fn is_unbound() {
         assert!(unbound.is_unbound());
     }
 
     #[test]
     #[should_panic]
-    fn test_not_unbound() {
+    fn not_unbound() {
         assert!(TEST_USIZE.is_unbound());
     }
 
     #[test]
-    fn test_unbound_add_self() {
+    fn unbound_add_self() {
         assert_eq!(unbound + unbound, unbound);
     }
 
     #[test]
-    fn test_unbound_add_usize() {
+    fn unbound_add_usize() {
         assert_eq!(unbound + TEST_USIZE, unbound);
     }
 
     #[test]
-    fn test_unbound_addassign_self() {
+    fn unbound_addassign_self() {
         let mut val = unbound;
         val += unbound;
 
@@ -158,7 +168,7 @@ mod tests {
     }
 
     #[test]
-    fn test_unbound_addassign_usize() {
+    fn unbound_addassign_usize() {
         let mut val = unbound;
         val += TEST_USIZE;
 
@@ -166,17 +176,17 @@ mod tests {
     }
 
     #[test]
-    fn test_unbound_sub_unbound() {
+    fn unbound_sub_unbound() {
         assert_eq!(unbound - unbound, unbound);
     }
 
     #[test]
-    fn test_unbound_sub_usize() {
+    fn unbound_sub_usize() {
         assert_eq!(unbound - TEST_USIZE, unbound);
     }
 
     #[test]
-    fn test_unbound_subassign_unbound() {
+    fn unbound_subassign_unbound() {
         let mut val = unbound;
         val -= unbound;
 
@@ -188,7 +198,7 @@ mod tests {
     }
 
     #[test]
-    fn test_unbound_subassign_usize() {
+    fn unbound_subassign_usize() {
         let mut val = unbound;
         val -= TEST_USIZE;
 
@@ -196,67 +206,67 @@ mod tests {
     }
 
     #[test]
-    fn test_unbound_mul_unbound() {
+    fn unbound_mul_unbound() {
         assert_eq!(unbound * unbound, unbound);
     }
 
     #[test]
-    fn test_unbound_mul_usize() {
+    fn unbound_mul_usize() {
         assert_eq!(unbound * TEST_USIZE, unbound);
     }
 
     #[test]
-    fn test_unbound_partialeq_unbound() {
+    fn unbound_partialeq_unbound() {
         assert_eq!(unbound, unbound);
     }
 
     #[test]
     #[should_panic]
-    fn test_unbound_partialeq_usize() {
+    fn unbound_partialeq_usize() {
         assert_eq!(unbound, TEST_USIZE);
     }
 
     #[test]
     #[should_panic]
-    fn test_unbound_partialord_lt_unbound() {
+    fn unbound_partialord_lt_unbound() {
         assert!(unbound < unbound);
     }
 
     #[test]
     #[should_panic]
-    fn test_unbound_partialord_lt_usize() {
+    fn unbound_partialord_lt_usize() {
         assert!(unbound < TEST_USIZE);
     }
 
     #[test]
-    fn test_unbound_partialord_le_unbound() {
+    fn unbound_partialord_le_unbound() {
         assert!(unbound <= unbound);
     }
 
     #[test]
     #[should_panic]
-    fn test_unbound_partialord_le_usize() {
+    fn unbound_partialord_le_usize() {
         assert!(unbound <= TEST_USIZE);
     }
 
     #[test]
     #[should_panic]
-    fn test_unbound_partialord_gt_unbound() {
+    fn unbound_partialord_gt_unbound() {
         assert!(unbound > unbound);
     }
 
     #[test]
-    fn test_unbound_partialord_gt_usize() {
+    fn unbound_partialord_gt_usize() {
         assert!(unbound > TEST_USIZE);
     }
 
     #[test]
-    fn test_unbound_partialord_ge_unbound() {
+    fn unbound_partialord_ge_unbound() {
         assert!(unbound >= unbound);
     }
 
     #[test]
-    fn test_unbound_partialord_ge_usize() {
+    fn unbound_partialord_ge_usize() {
         assert!(unbound >= TEST_USIZE);
     }
 }

@@ -1,0 +1,131 @@
+use crate::compatible_problem_type_trait::CompatibleProblemType;
+use crate::knapsack::ProblemKnapsacks;
+use crate::problem_type::{BoundedSolver, BoundedProblem};
+use minilp::{Problem, OptimizationDirection, ComparisonOp};
+
+struct ItemPos<const S: usize> {
+    pub j: usize, //index
+    pub coord: [f64; S], //item coordinates
+    pub dist: f64, //smallest distance from hyperplane
+}
+
+#[derive(Clone, Copy)]
+pub struct TheoreticalGreedy;
+impl<T, const S: usize> BoundedSolver<T, S> for TheoreticalGreedy 
+where
+    T: CompatibleProblemType + Into<f64>,
+{
+    fn solve(self, mut problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S> {
+        let mut items = problem.items;
+        let knapsack = &mut problem.knapsacks[0];
+
+        //set up ItemPos vector for each item set
+        let mut total_items = 0;
+        let mut item_positions: Vec<ItemPos<S>> = Vec::with_capacity(items.len());
+        for (i, item) in items.iter().enumerate() {
+            let mut pos = [0.0; S];
+            for r in 0..S {
+                pos[r] = item.weights[r].into() / item.value;
+            }
+
+            item_positions.push(ItemPos::<S> {
+                j: i,
+                coord: pos,
+                dist: 0.0,
+            });
+
+            total_items += item.quantity;
+        }
+
+        //set up dual problem
+        let mut dual_problem = Problem::new(OptimizationDirection::Minimize);
+        let mut variables: Vec<minilp::Variable> 
+            = Vec::with_capacity(total_items);
+        for m in 0..S {
+            variables.push(dual_problem.add_var(knapsack.capacity[m].into() -
+                                                knapsack.weights()[m].into(),
+                           (0.0, f64::INFINITY)));
+        }
+
+        for _ in 0..total_items {
+            variables.push(dual_problem.add_var(1.0, (0.0, f64::INFINITY)));
+        }
+
+        //set up constraints
+        let mut item_count = 0;
+        for item in items.iter() {
+            let mut w_formula: Vec<(minilp::Variable, f64)> 
+                = Vec::with_capacity(S);
+            for r in 0..S {
+                w_formula.push((variables[r], item.weights[r].into()));
+            }
+
+            for _ in 0..item.quantity {
+                let mut full_formula: Vec<(minilp::Variable, f64)> 
+                    = Vec::with_capacity(w_formula.len() + total_items);
+                full_formula.extend_from_slice(&w_formula);
+                for j in 0..total_items {
+                    if j == item_count {
+                        full_formula.push((variables[w_formula.len() + j], 
+                                           1.0));
+                    } else {
+                        full_formula.push((variables[w_formula.len() + j], 
+                                           0.0));
+                    }
+                }
+
+                dual_problem.add_constraint(&full_formula, 
+                                            ComparisonOp::Ge, 
+                                            item.value);
+                item_count += 1;
+            }
+        }
+
+        //solve dual problem using simplex algorithm
+        let solution = dual_problem.solve().unwrap();
+
+        //set up normal vector of hyperplane using optimal relevance values found above
+        let mut hyperplane_norm: Vec<f64> = Vec::with_capacity(S);
+        for r in 0..S {
+            hyperplane_norm.push(solution[variables[r]]);
+        }
+
+        //find distance of each ItemPos object from origin along the normal vector
+        for item_pos in item_positions.iter_mut() {
+            let mut dot_product = 0.0;
+            for r in 0..S {
+                dot_product += item_pos.coord[r] * hyperplane_norm[r];
+            }
+
+            let mut magnitude = 0.0;
+            for r in 0..S {
+                magnitude += hyperplane_norm[r].powf(2.0)
+            }
+
+            magnitude = magnitude.sqrt();
+            item_pos.dist = dot_product/magnitude;
+        }
+
+        //now sort objects in increasing order based on distance
+        item_positions.sort_by(|x, y| x.dist.partial_cmp(&y.dist).unwrap());
+
+        //now add objects to knapsack
+        for item_pos in item_positions {
+            let mut can_fit = items[item_pos.j].quantity;
+            for r in 0..S {
+                let rem = knapsack.capacity[r].into() - 
+                          knapsack.weights()[r].into();
+                let q_div = (rem / items[item_pos.j].weights[r]
+                                                    .into()
+                                                    .floor()) as usize;
+                if q_div < can_fit {
+                    can_fit = q_div;
+                }
+            }
+
+            knapsack.add_mut(&mut items[item_pos.j], can_fit);
+        }
+
+        problem.knapsacks
+    }
+}
