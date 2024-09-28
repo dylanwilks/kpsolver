@@ -12,7 +12,6 @@ path = "src/lib.rs"
 [dependencies]
 minilp = "0.2.2"
 ndarray = "0.15.6"
-num-traits = "0.2"
 good_lp = { version = "*", features = ["cplex-rs", "coin_cbc", "highs", "scip"], default-features = true }
 
 [dev-dependencies]

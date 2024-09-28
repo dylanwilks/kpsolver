@@ -5,7 +5,7 @@ macro_rules! items {
     <
         $item_type:ty,
         $length:literal,
-        $count_type:ty
+        $count_type:tt
     >:
     $(
         $val:expr,
@@ -21,15 +21,20 @@ macro_rules! items {
                     value: $val,
                     weights: [$($weights),*],
                     quantity: $crate::items!(@items_quantity, 
-                                             $($quantity,)?
-                                             <$count_type as $crate::
-                                                             unbound_struct::
-                                                             Quantity>::
-                                                             identity()),
+                                             $count_type,
+                                             usize($($quantity,)? 1)
+                                             unbound($($quantity,)? unbound)),
                 });
             )*
         };
-    (@items_quantity, $quantity:expr $(, $_default:expr)?) => {
-        $quantity
+    (@items_quantity, usize, 
+     usize($quantity_usize:expr $(, $_default_usize:expr)?)
+     unbound($quantity_unbound:expr $(, $_default_unbound:expr)?)) => {
+        $quantity_usize
+    };
+    (@items_quantity, unbound, 
+     usize($quantity_usize:expr $(, $_default_usize:expr)?)
+     unbound($quantity_unbound:expr $(, $_default_unbound:expr)?)) => {
+        $quantity_usize
     };
 }

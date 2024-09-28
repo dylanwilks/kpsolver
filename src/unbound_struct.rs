@@ -9,9 +9,6 @@ use std::cmp::Ordering;
 #[derive(Debug, Eq)]
 pub struct unbound;
 pub trait Quantity {
-    //Required method
-    fn identity() -> Self;
-
     //Provided method
     fn is_unbound(&self) -> bool {
         false
@@ -19,20 +16,12 @@ pub trait Quantity {
 }
 
 impl Quantity for unbound {
-    fn identity() -> Self {
-        unbound
-    }
-
     fn is_unbound(&self) -> bool {
         true
     }
 }
 
-impl Quantity for usize {
-    fn identity() -> Self {
-        1
-    }
-}
+impl Quantity for usize {}
 //maybe it could work with floats?
 
 //Overloading for the unbound type (unbound + T = unbound, unbound <= usize == true)

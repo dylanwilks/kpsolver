@@ -11,7 +11,7 @@ mod compatible_problem_type_trait;
 pub mod item;
 pub mod knapsack;
 pub mod problem_type;
-pub mod unbound_struct;
+mod unbound_struct;
 mod items_macro;
 mod knapsacks_macro;
 
