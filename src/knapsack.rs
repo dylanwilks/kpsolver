@@ -1,19 +1,20 @@
-use std::collections::HashMap;
-use std::cmp::Ordering;
-use std::marker::PhantomData;
+use crate::compatible_problem_type_trait::{
+    CompatibleProblemType, UnboundCompatibility
+};
+use crate::item::Item;
 
-use crate::compatible_problem_type_trait::CompatibleProblemType;
-use crate::item::ItemBound;
+use indexmap::IndexMap;
+use std::cmp::Ordering;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Knapsack<T, const S: usize> 
+pub struct Knapsack<T, const S: usize>
 where
     T: CompatibleProblemType,
 {
     value: f64,
-    items: HashMap<(u64, [u64; S]), usize>,
+    items: IndexMap<(u64, [u64; S]), Item<T, S>>,
     weights: [T; S],
-    pub capacity: [T; S],
+    pub capacity: [T; S], 
 }
 
 impl<T, const S: usize> Knapsack<T, S> 
@@ -22,8 +23,8 @@ where
 {
     pub fn new(capacity: [T; S]) -> Self {
         Self {
-            value: <f64 as Default>::default(),
-            items: HashMap::new(),
+            value: 0.0,
+            items: IndexMap::new(),
             weights: [<T as Default>::default(); S],
             capacity: capacity,
         }
@@ -37,111 +38,111 @@ where
         &self.weights
     }
 
-    pub fn peek_item(&self, value: f64, weights: [T; S]) //return reference somehow?
-    -> Option<ItemBound<T, S>> {
-        let mut item = ItemBound::<T, S>::new(value, weights, 0);
-        if let Some(item_q) = self.items.get(&item.to_key()) {
-            item.quantity = *item_q;
-            return Some(item);
-        } else {
-            return None;
-        }
+    pub fn get_item(&self, key: (f64, [T; S])) -> Option<&Item<T, S>> {
+        self.items.get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
-    pub fn peek_item_list(&self) -> Vec<ItemBound<T, S>> {
-        let mut item_v: Vec<ItemBound<T, S>> = 
-            Vec::<ItemBound<T, S>>::with_capacity(self.items.len());
-        for item in self {
-            item_v.push(item);
-        }
-
-        item_v
+    pub fn get_item_mut(&mut self, key: (f64, [T; S])) -> Option<&mut Item<T, S>> {
+        self.items.get_mut(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
-    pub fn add(&mut self, item: ItemBound<T, S>) -> bool {
-        if item.quantity == 0 {
-            return true;
-        }
+    pub fn get_index_of(&self, key: (f64, [T; S])) -> Option<usize> {
+        self.items.get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+    }
 
+    pub fn add(&mut self, item: Item<T, S>) -> bool {
         for r in 0..S {
-            if item.weights[r].scale(item.quantity) + self.weights[r] > 
-                self.capacity[r] {
+            if item.weights[r] * item.quantity + self.weights[r] > 
+            self.capacity[r] {
                 return false;
             }
         }
 
-        if let Some(item_q) = self.items.get_mut(&item.to_key()) {
-            *item_q += item.quantity;
-        } else {
-            self.items.insert(item.to_key(), item.quantity); 
-        }
-
+        self.value += item.value * item.quantity.into();
         for r in 0..S {
-            self.weights[r] += item.weights[r].scale(item.quantity);
+            self.weights[r] += item.weights[r] * item.quantity;
         }
 
-        self.value += item.value * item.quantity as f64;
+        if let Some(stored_item) = self.items.get_mut(&item.to_key()) {
+            stored_item.quantity += item.quantity;
+        } else {
+            self.items.insert(item.to_key(), item);
+        }
+
         return true;
     }
 
-    pub fn add_mut(&mut self, item: &mut ItemBound<T, S>, count: usize)
-    -> bool {
-            if count == 0 {
-                return true;
-            }
+    pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T)
+    -> bool where
+        R: UnboundCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
+    {
+        if item.quantity < quantity {
+            return false;
+        }
 
-            if item.quantity < count {
+        for r in 0..S {
+            if item.weights[r] * quantity + self.weights[r] > 
+            self.capacity[r] {
                 return false;
             }
+        }
 
-            for r in 0..S {
-                if item.weights[r].scale(count) + self.weights[r] > 
-                    self.capacity[r] {
-                    return false;
+        self.value += item.value * <T as Into<f64>>::into(quantity);
+        item.quantity -= quantity;
+        for r in 0..S {
+            self.weights[r] += item.weights[r] * quantity;
+        }
+
+        if let Some(stored_item) = self.items.get_mut(&item.to_key()) {
+            stored_item.quantity += quantity;
+        } else {
+            self.items.insert(
+                item.to_key(), 
+                Item::<T, S> {
+                    value: item.value,
+                    weights: item.weights,
+                    quantity: quantity,
                 }
-            }
+            );
+        }
 
-            if let Some(item_q) = self.items.get_mut(&item.to_key()) {
-                *item_q += count;
-            } else {
-                self.items.insert(item.to_key(), count); 
-            }
-
-            for r in 0..S {
-                self.weights[r] += item.weights[r].scale(count);
-            }
-
-            self.value += item.value * count as f64;
-            item.quantity -= count;
-            return true;
+        return true;
     }
 
-    //removes the corresponding amount of items from the hashmap.
-    //returns the items removed (as Option).
-    pub fn remove(&mut self, item: ItemBound<T, S>) -> Option<ItemBound<T, S>> {
-        if let Some(item_q) = self.items.get_mut(&item.to_key()) {
-            match (*item_q).cmp(&item.quantity) {
+    pub fn take(&mut self, item: Item<T, S>) -> Option<Item<T, S>> {
+        if let Some(stored_item) = self.items.get_mut(&item.to_key()) {
+            match stored_item
+                  .quantity
+                  .partial_cmp(&item.quantity)
+                  .unwrap() {
                 Ordering::Less => {
                     return None;
                 },
 
-                Ordering::Greater => {
-                    *item_q -= item.quantity;
-                },
-
-                Ordering::Equal => {
-                    self.items.remove(&item.to_key());
+                Ordering::Greater | Ordering::Equal => {
+                    stored_item.quantity -= item.quantity;
                 },
             }
 
-            self.value -= item.value * item.quantity as f64;
+            self.value -= item.value * item.quantity.into();
             for r in 0..S {
-                self.weights[r] -= item.weights[r].scale(item.quantity);
+                self.weights[r] -= item.weights[r] * item.quantity;
             }
 
             return Some(item);
         } else {
             return None;
+        }
+    }
+
+    pub fn remove_item(&mut self, key: (f64, [T; S])) -> Option<Item<T, S>> {
+        self.items.shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+    }
+
+    pub fn remove_index(&mut self, index: usize) -> Option<Item<T, S>> {
+        match self.items.shift_remove_index(index) {
+            Some((_, item)) => Some(item),
+            None => None,
         }
     }
 
@@ -153,120 +154,28 @@ where
         }
     }
 
-    pub fn iter<'a>(&'a self) -> KnapsackIter<'a, T, S> {
-        KnapsackIter::<'a, T, S> {
-            itr: self.items.iter(),
-            phantom: PhantomData,
-        }
+    pub fn len(&self) -> usize {
+        self.items.len()
     }
 
-    pub fn iter_mut<'a>(&'a mut self) -> KnapsackIterMut<'a, T, S> {
-        KnapsackIterMut::<'a, T, S> {
-            itr: self.items.iter_mut(),
-            phantom: PhantomData,
-        }
+    pub fn into_iter(self) -> indexmap::map::IntoValues<(u64, [u64; S]), Item<T, S>> {
+        self.items.into_values()
+    }
+
+    pub fn iter<'a>(&'a self) -> indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S>> {
+        self.items.values()
     }
 }
 
-pub struct KnapsackIntoIter<T, const S: usize> 
+impl<T, const S: usize> IntoIterator for Knapsack<T, S>
 where
     T: CompatibleProblemType,
 {
-    itr: std::collections::hash_map::IntoIter<(u64, [u64; S]), usize>,
-    phantom: PhantomData<T>,
-}
-
-pub struct KnapsackIter<'a, T, const S: usize> 
-where
-    T: CompatibleProblemType,
-{
-    itr: std::collections::hash_map::Iter<'a, (u64, [u64; S]), usize>,
-    phantom: PhantomData<T>,
-}
-
-pub struct KnapsackIterMut<'a, T, const S: usize> 
-where
-    T: CompatibleProblemType,
-{
-    itr: std::collections::hash_map::IterMut<'a, (u64, [u64; S]), usize>,
-    phantom: PhantomData<T>,
-}
-
-impl<T, const S: usize> Iterator for KnapsackIntoIter<T, S>
-where
-    T: CompatibleProblemType,
-{
-    type Item = ItemBound<T, S>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(((v, w), q)) = self.itr.next() {
-            let item = ItemBound::<T, S> {
-                value: f64::key_to_type(v),
-                weights: w.map(|x| T::key_to_type(x)), 
-                quantity: q,
-            };
-
-            return Some(item);
-        } else {
-            return None;
-        }
-    }
-}
-
-impl<'a, T, const S: usize> Iterator for KnapsackIter<'a, T, S>
-where
-    T: CompatibleProblemType,
-{
-    type Item = ItemBound<T, S>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(((v, w), q)) = self.itr.next() {
-            let item = ItemBound::<T, S> {
-                value: f64::key_to_type(*v),
-                weights: w.map(|x| T::key_to_type(x)), 
-                quantity: *q,
-            };
-
-            return Some(item);
-        } else {
-            return None;
-        }
-    }
-}
-
-impl<'a, T, const S: usize> Iterator for KnapsackIterMut<'a, T, S>
-where
-    T: CompatibleProblemType,
-{
-    type Item = ItemBound<T, S>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if let Some(((v, w), q)) = self.itr.next() {
-            let item = ItemBound::<T, S> {
-                value: f64::key_to_type(*v),
-                weights: w.map(|x| T::key_to_type(x)), 
-                quantity: *q,
-            };
-
-            return Some(item);
-        } else {
-            return None;
-        }
-    }
-}
-
-impl<T, const S: usize> IntoIterator for Knapsack<T, S> 
-where
-    T: CompatibleProblemType,
-{
-    type Item = ItemBound<T, S>;
-    type IntoIter = KnapsackIntoIter<T, S>;
+    type Item = Item<T, S>;
+    type IntoIter = indexmap::map::IntoValues<(u64, [u64; S]), Item<T, S>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        KnapsackIntoIter::<T, S> {
-            itr: self.items.into_iter(),
-            phantom: PhantomData,
-        }
+        self.items.into_values()
     }
 }
 
@@ -274,29 +183,22 @@ impl<'a, T, const S: usize> IntoIterator for &'a Knapsack<T, S>
 where
     T: CompatibleProblemType,
 {
-    type Item = ItemBound<T, S>;
-    type IntoIter = KnapsackIter<'a, T, S>;
+    type Item = <indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S>> as Iterator>::Item;
+    type IntoIter = indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S>>;
 
     fn into_iter(self) -> Self::IntoIter {
-        KnapsackIter::<'a, T, S> {
-            itr: self.items.iter(),
-            phantom: PhantomData,
-        }
+        self.items.values()
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a mut Knapsack<T, S> 
+impl<T, const S: usize> std::ops::Index<usize> for Knapsack<T, S>
 where
     T: CompatibleProblemType,
 {
-    type Item = ItemBound<T, S>;
-    type IntoIter = KnapsackIterMut<'a, T, S>;
+    type Output = Item<T, S>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        KnapsackIterMut::<'a, T, S> {
-            itr: self.items.iter_mut(),
-            phantom: PhantomData,
-        }
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.items[index]
     }
 }
 
@@ -335,11 +237,16 @@ where
         self.knapsacks.len()
     }
 
+    pub fn into_iter(self) -> std::vec::IntoIter<Knapsack<T, S>> {
+        self.knapsacks.into_iter()
+    }
+
     pub fn iter<'a>(&'a self) -> std::slice::Iter<'a, Knapsack<T, S>> {
         self.knapsacks.iter()
     }
 
-    pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, Knapsack<T, S>> {
+    pub fn iter_mut<'a>(&'a mut self) 
+    -> std::slice::IterMut<'a, Knapsack<T, S>> {
         self.knapsacks.iter_mut()
     }
 }
@@ -356,7 +263,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a ProblemKnapsacks<T, S> 
+impl<'a, T, const S: usize> IntoIterator for &'a ProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -368,7 +275,8 @@ where
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a mut ProblemKnapsacks<T, S> 
+impl<'a, T, const S: usize> IntoIterator 
+for &'a mut ProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -391,7 +299,8 @@ where
     }
 }
 
-impl<T, const S: usize> std::ops::IndexMut<usize> for ProblemKnapsacks<T, S>
+impl<T, const S: usize> std::ops::IndexMut<usize> 
+for ProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {

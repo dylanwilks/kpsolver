@@ -1,4 +1,4 @@
-use crate::compatible_problem_type_trait::CompatibleProblemType;
+use crate::item::Item;
 use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedSolver, BoundedProblem};
 use minilp::{Problem, OptimizationDirection, ComparisonOp};
@@ -11,12 +11,10 @@ struct ItemPos<const S: usize> {
 
 #[derive(Clone, Copy)]
 pub struct TheoreticalGreedy;
-impl<T, const S: usize> BoundedSolver<T, S> for TheoreticalGreedy 
-where
-    T: CompatibleProblemType + Into<f64>,
-{
-    fn solve(self, mut problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S> {
-        let mut items = problem.items;
+impl<const S: usize> BoundedSolver<f64, S> for TheoreticalGreedy {
+    fn solve(self, mut problem: BoundedProblem<f64, S>) 
+    -> ProblemKnapsacks<f64, S> {
+        let items = problem.items;
         let knapsack = &mut problem.knapsacks[0];
 
         //set up ItemPos vector for each item set
@@ -25,7 +23,7 @@ where
         for (i, item) in items.iter().enumerate() {
             let mut pos = [0.0; S];
             for r in 0..S {
-                pos[r] = item.weights[r].into() / item.value;
+                pos[r] = item.weights[r] / item.value;
             }
 
             item_positions.push(ItemPos::<S> {
@@ -34,7 +32,7 @@ where
                 dist: 0.0,
             });
 
-            total_items += item.quantity;
+            total_items += item.quantity as usize;
         }
 
         //set up dual problem
@@ -42,8 +40,8 @@ where
         let mut variables: Vec<minilp::Variable> 
             = Vec::with_capacity(total_items);
         for m in 0..S {
-            variables.push(dual_problem.add_var(knapsack.capacity[m].into() -
-                                                knapsack.weights()[m].into(),
+            variables.push(dual_problem.add_var(knapsack.capacity[m] -
+                                                knapsack.weights()[m],
                            (0.0, f64::INFINITY)));
         }
 
@@ -57,10 +55,10 @@ where
             let mut w_formula: Vec<(minilp::Variable, f64)> 
                 = Vec::with_capacity(S);
             for r in 0..S {
-                w_formula.push((variables[r], item.weights[r].into()));
+                w_formula.push((variables[r], item.weights[r]));
             }
 
-            for _ in 0..item.quantity {
+            for _ in 0..item.quantity as usize {
                 let mut full_formula: Vec<(minilp::Variable, f64)> 
                     = Vec::with_capacity(w_formula.len() + total_items);
                 full_formula.extend_from_slice(&w_formula);
@@ -111,19 +109,24 @@ where
 
         //now add objects to knapsack
         for item_pos in item_positions {
-            let mut can_fit = items[item_pos.j].quantity;
+            let mut can_fit = items[item_pos.j].quantity as usize;
             for r in 0..S {
-                let rem = knapsack.capacity[r].into() - 
-                          knapsack.weights()[r].into();
+                let rem = knapsack.capacity[r] - 
+                          knapsack.weights()[r];
                 let q_div = (rem / items[item_pos.j].weights[r]
-                                                    .into()
                                                     .floor()) as usize;
                 if q_div < can_fit {
                     can_fit = q_div;
                 }
             }
 
-            knapsack.add_mut(&mut items[item_pos.j], can_fit);
+            knapsack.add(
+                Item::<f64, S> {
+                    value: items[item_pos.j].value,
+                    weights: items[item_pos.j].weights,
+                    quantity: can_fit as f64,
+                }
+            );
         }
 
         problem.knapsacks

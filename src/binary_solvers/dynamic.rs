@@ -1,42 +1,40 @@
 use ndarray::{ArrayD, IxDyn};
-use crate::compatible_problem_type_trait::CompatibleProblemType;
+use crate::item::Item;
 use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedProblem, BoundedSolver};
 
 //algorithm implemented for types that can be cast into usize (indexing)
 #[derive(Clone, Copy)]
 pub struct Dynamic;
-impl<T, const S: usize> BoundedSolver<T, S> for Dynamic
-where
-    T: CompatibleProblemType + Into<u64>,
-{
-    fn solve(self, mut problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S> {
+impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
+    fn solve(self, mut problem: BoundedProblem<u32, S>) 
+    -> ProblemKnapsacks<u32, S> {
         //find and create the dimensions of the memo matrix
         if problem.knapsacks.len() != 1 {
             panic!("ERROR::DYNAMIC_ALGORITHM::SUPPORTS_ONLY_1_KNAPSACK");
         }
 
-        let mut items = problem.items;
+        let items = problem.items;
         let knapsack = &mut problem.knapsacks[0];
 
         let mut dim: Vec<usize> = (0..=S).collect();
         for item in items.iter() {
-            dim[0] += item.quantity;
+            dim[0] += usize::try_from(item.quantity).unwrap();
         }
 
         dim[0] += 1;
         let mut capacity = vec![0_usize; S];
         capacity.clone_from_slice(knapsack.capacity.map
                                   (|x| 
-                                   usize::try_from(x.into())
+                                   usize::try_from(x)
                                    .unwrap())
                                   .as_slice());
         let weight = *knapsack.weights();
         for i in 0..S {
-            if usize::try_from(weight[i].into()).unwrap() > capacity[i] {
+            if usize::try_from(weight[i]).unwrap() > capacity[i] {
                 capacity[i] = 0;
             } else {
-                capacity[i] -= weight[i].into() as usize;
+                capacity[i] -= weight[i] as usize;
             }
         }
 
@@ -58,13 +56,13 @@ where
                     let mut excess_weight: bool = false;
                     //find ref_index by decreasing corresponding elements of index with item weights
                     for i in 1..=S {
-                        if usize::try_from(item.weights[i-1].into()).unwrap() 
+                        if usize::try_from(item.weights[i-1]).unwrap() 
                         > index[i] {
                             excess_weight = true;
                             break;
                         } else {
                             ref_index[i] = index[i] - 
-                                item.weights[i-1].into() as usize;
+                                item.weights[i-1] as usize;
                         }
                     }
                     
@@ -118,7 +116,7 @@ where
                 if current_val != memo[IxDyn(&index)] {
                     item_quantity[i] += 1;
                     for j in 1..=S {
-                        index[j] -= item.weights[j - 1].into() as usize;
+                        index[j] -= item.weights[j - 1] as usize;
                     }
                 }
 
@@ -127,7 +125,13 @@ where
         }
 
         for (i, quantity) in item_quantity.iter().enumerate() {
-            knapsack.add_mut(&mut items[i], *quantity);
+            knapsack.add(
+                Item::<u32, S> {
+                    value: items[i].value,
+                    weights: items[i].weights,
+                    quantity: u32::try_from(*quantity).unwrap(),
+                }
+            );
         }
 
         problem.knapsacks

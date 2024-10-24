@@ -1,142 +1,95 @@
-use std::ops::Add;
-use std::ops::AddAssign;
-use std::ops::Sub;
-use std::ops::SubAssign;
-use std::ops::Mul;
+use crate::compatible_problem_type_trait::UnboundCompatibility;
+
 use std::cmp::Ordering;
+use std::ops::{
+    Add, Sub, Mul, 
+    AddAssign, SubAssign 
+};
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Eq)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct unbound;
-pub trait Quantity {
-    //Provided method
-    fn is_unbound(&self) -> bool {
-        false
+impl UnboundCompatibility for unbound {
+    fn null() -> Option<Self> { 
+        None 
     }
-}
 
-impl Quantity for unbound {
-    fn is_unbound(&self) -> bool {
+    fn is_unbound() -> bool {
         true
     }
 }
 
-impl Quantity for usize {}
-//maybe it could work with floats?
-
-//Overloading for the unbound type (unbound + T = unbound, unbound <= usize == true)
-impl<N> Add<N> for unbound 
-where
-    N: Quantity,
-{
+impl<T> Add<T> for unbound {
     type Output = Self;
 
-    fn add(self, _other: N) -> Self {
-        Self {}
+    fn add(self, _rhs: T) -> Self::Output {
+        self
     }
 }
 
-impl<N> AddAssign<N> for unbound 
-where
-    N: Quantity,
-{
-    fn add_assign(&mut self, _other: N) {
-        *self = Self {};
-    }
+impl<T> AddAssign<T> for unbound {
+    fn add_assign(&mut self, _rhs: T) {}
 }
 
-impl<N> Sub<N> for unbound
-where
-    N: Quantity,
-{
+impl<T> Sub<T> for unbound {
     type Output = Self;
 
-    fn sub(self, _other: N) -> Self {
-        Self {}
+    fn sub(self, _rhs: T) -> Self::Output {
+        self
     }
 }
 
-impl<N> SubAssign<N> for unbound
-where
-    N: Quantity,
-{
-    fn sub_assign(&mut self, _other: N) {
-        *self = Self {};
-    }
+impl<T> SubAssign<T> for unbound {
+    fn sub_assign(&mut self, _rhs: T) {}
 }
 
-impl<N> Mul<N> for unbound
-where
-    N: Quantity,
+impl<T> Mul<T> for unbound 
+where T: UnboundCompatibility + std::cmp::PartialEq,
 {
-    type Output = Self;
+    type Output = Option<unbound>;
 
-    fn mul(self, _other: N) -> Self {
-        Self {}
-    }
-}
-
-impl<N> PartialEq<N> for unbound
-where
-    N: Quantity,
-{
-    fn eq(&self, other: &N) -> bool {
-        N::is_unbound(other)
-    }
-}
-
-impl<N> PartialOrd<N> for unbound
-where
-    N: Quantity,
-{
-    fn partial_cmp(&self, other: &N) -> Option<Ordering> {
-        if self.gt(other) {
-            return Some(Ordering::Greater);
+    fn mul(self, rhs: T) -> Self::Output {
+        if let Some(null) = T::null() {
+            if rhs == null {
+                return None;
+            }
         }
 
-        Some(Ordering::Less)
+        Some(unbound)
     }
+}
 
-    fn lt(&self, _other: &N) -> bool {
-        false
-    }
-
-    fn le(&self, other: &N) -> bool {
-        if N::is_unbound(other) {
-            true 
-        } else {
-            false 
-        }
-    }
-
-    fn gt(&self, other: &N) -> bool {
-        if N::is_unbound(other) {
-            false 
-        } else {
+impl<T> PartialEq<T> for unbound
+where T: UnboundCompatibility,
+{
+    fn eq(&self, _rhs: &T) -> bool {
+        if T::is_unbound() {
             true
+        } else {
+            false
         }
     }
+}
 
-    fn ge(&self, _other: &N) -> bool {
-        true
+impl Eq for unbound {}
+
+impl<T> PartialOrd<T> for unbound
+where T: UnboundCompatibility,
+{
+    fn partial_cmp(&self, _rhs: &T) -> Option<Ordering> {
+        if T::is_unbound() {
+            Some(Ordering::Equal)
+        } else {
+            Some(Ordering::Greater)
+        }
     }
 }
+
 
 #[cfg(test)]
 mod test {
     use super::*;
-    const TEST_USIZE: usize = 1;
-
-    #[test]
-    fn is_unbound() {
-        assert!(unbound.is_unbound());
-    }
-
-    #[test]
-    #[should_panic]
-    fn not_unbound() {
-        assert!(TEST_USIZE.is_unbound());
-    }
+    const TEST_U32: u32 = 1;
 
     #[test]
     fn unbound_add_self() {
@@ -145,7 +98,7 @@ mod test {
 
     #[test]
     fn unbound_add_usize() {
-        assert_eq!(unbound + TEST_USIZE, unbound);
+        assert_eq!(unbound + TEST_U32, unbound);
     }
 
     #[test]
@@ -159,7 +112,7 @@ mod test {
     #[test]
     fn unbound_addassign_usize() {
         let mut val = unbound;
-        val += TEST_USIZE;
+        val += TEST_U32;
 
         assert_eq!(val, unbound);
     }
@@ -171,7 +124,7 @@ mod test {
 
     #[test]
     fn unbound_sub_usize() {
-        assert_eq!(unbound - TEST_USIZE, unbound);
+        assert_eq!(unbound - TEST_U32, unbound);
     }
 
     #[test]
@@ -181,7 +134,7 @@ mod test {
 
         assert_eq!(val, unbound);
 
-        val -= TEST_USIZE;
+        val -= TEST_U32;
 
         assert_eq!(val, unbound);
     }
@@ -189,19 +142,19 @@ mod test {
     #[test]
     fn unbound_subassign_usize() {
         let mut val = unbound;
-        val -= TEST_USIZE;
+        val -= TEST_U32;
 
         assert_eq!(val, unbound);
     }
 
     #[test]
     fn unbound_mul_unbound() {
-        assert_eq!(unbound * unbound, unbound);
+        assert_eq!(unbound * unbound, Some(unbound));
     }
 
     #[test]
     fn unbound_mul_usize() {
-        assert_eq!(unbound * TEST_USIZE, unbound);
+        assert_eq!(unbound * TEST_U32, Some(unbound));
     }
 
     #[test]
@@ -212,7 +165,7 @@ mod test {
     #[test]
     #[should_panic]
     fn unbound_partialeq_usize() {
-        assert_eq!(unbound, TEST_USIZE);
+        assert_eq!(unbound, TEST_U32);
     }
 
     #[test]
@@ -224,7 +177,7 @@ mod test {
     #[test]
     #[should_panic]
     fn unbound_partialord_lt_usize() {
-        assert!(unbound < TEST_USIZE);
+        assert!(unbound < TEST_U32);
     }
 
     #[test]
@@ -235,7 +188,7 @@ mod test {
     #[test]
     #[should_panic]
     fn unbound_partialord_le_usize() {
-        assert!(unbound <= TEST_USIZE);
+        assert!(unbound <= TEST_U32);
     }
 
     #[test]
@@ -246,7 +199,7 @@ mod test {
 
     #[test]
     fn unbound_partialord_gt_usize() {
-        assert!(unbound > TEST_USIZE);
+        assert!(unbound > TEST_U32);
     }
 
     #[test]
@@ -256,6 +209,6 @@ mod test {
 
     #[test]
     fn unbound_partialord_ge_usize() {
-        assert!(unbound >= TEST_USIZE);
+        assert!(unbound >= TEST_U32);
     }
 }

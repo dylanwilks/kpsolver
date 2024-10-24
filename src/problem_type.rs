@@ -7,7 +7,7 @@ pub struct BoundedProblem<T, const S: usize>
 where
     T: CompatibleProblemType,
 {
-    pub items: ProblemItems<T, S, usize>,
+    pub items: ProblemItems<T, S>,
     pub knapsacks: ProblemKnapsacks<T, S>,
 }
 
@@ -15,14 +15,13 @@ pub struct BoundedProblemMut<'a, T, const S: usize>
 where
     T: CompatibleProblemType,
 {
-    pub items: &'a mut ProblemItems<T, S, usize>,
+    pub items: &'a mut ProblemItems<T, S>,
     pub knapsacks: ProblemKnapsacks<T, S>,
 }
 
 pub trait BoundedSolver<T, const S: usize>: Clone + Copy
 where
     T: CompatibleProblemType,
-    Self: Sized,
 {
     //Required methods
     fn solve(self, problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S>;
@@ -37,9 +36,9 @@ where
 
         for knapsack in &solution {
             for item in knapsack {
-                let index = problem.items.items_hash
-                    .get_mut(&item.to_key()).unwrap();
-                problem.items.items[*index].quantity -= item.quantity;
+                problem.items.get_item_mut((item.value, item.weights))
+                             .unwrap()
+                             .quantity -= item.quantity;
             }
         }
 

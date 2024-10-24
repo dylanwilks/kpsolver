@@ -1,59 +1,90 @@
-use std::ops::{Add, AddAssign, SubAssign};
+use std::ops::{
+    Add, Sub, Mul, 
+    AddAssign, SubAssign, MulAssign
+};
 
-//in the future allow partialord to work (closed paths)
-pub trait CompatibleProblemType: Default + Clone + Copy + 
-PartialOrd + Add<Output = Self> + AddAssign + SubAssign {
+pub trait CompatibleProblemType:
+Default + Clone + Copy + Into<f64> +
+PartialEq + PartialOrd + 
+Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> +
+AddAssign + SubAssign + MulAssign
+{
     // Required methods
     fn type_to_key(value: Self) -> u64;
-    fn key_to_type(key: u64) -> Self; //somehow assert isomorphism without testing?
+    fn key_to_type(key: u64) -> Self;
 
     // Provided methods
-    fn scale(self, scale: usize) -> Self {
-        let mut x = self;
-        for _ in 0..scale {
-            x += x;
-        }
+    fn default_quantity() -> Self {
+        Self::default()
+    }
 
-        x
+    fn null() -> Option<Self> 
+    where Self: Sized,
+    {
+        Some(Self::default())
     }
 }
 
+pub trait UnboundCompatibility: Default {
+    // Provided methods
+    fn null() -> Option<Self> 
+    where Self: Sized,
+    {
+        Some(Self::default())
+    }
+
+    fn is_unbound() -> bool {
+        false
+    }
+}
+
+impl<T> UnboundCompatibility for T
+where
+    T: CompatibleProblemType,
+{
+    fn null() -> Option<Self> 
+    where Self: Sized,
+    {
+        T::null()
+    }
+}
+   
 macro_rules! impl_CompatibleProblemType_for_unsigned {
     ( $( $type:ty ),* ) => {
         $(
             impl CompatibleProblemType for $type {
-                fn type_to_key(value: Self) -> u64 {
-                    value as u64
+                fn type_to_key(value: Self) -> u64 { 
+                    value as u64 
                 }
 
-                fn key_to_type(key: u64) -> Self {
-                    key as Self
+                fn key_to_type(key: u64) -> Self { 
+                    key as Self 
                 }
 
-                fn scale(self, scale: usize) -> Self {
-                    self * scale as $type
+                fn default_quantity() -> Self { 
+                    1 
                 }
             }
         )*
     };
 }
 
-impl_CompatibleProblemType_for_unsigned!(usize, u64, u32, u16, u8);
+impl_CompatibleProblemType_for_unsigned!(u32, u16, u8);
 
 macro_rules! impl_CompatibleProblemType_for_floats {
     ( $( $type:ty ),* ) => {
         $(
             impl CompatibleProblemType for $type {
-                fn type_to_key(value: Self) -> u64 {
-                    value.to_bits() as u64
+                fn type_to_key(value: Self) -> u64 { 
+                    value.to_bits() as u64 
                 }
 
                 fn key_to_type(key: u64) -> Self {
                     unsafe { std::mem::transmute::<u64, f64>(key) as Self }
                 }
 
-                fn scale(self, scale: usize) -> Self {
-                    self * scale as $type
+                fn default_quantity() -> Self { 
+                    1.0 
                 }
             }
         )*

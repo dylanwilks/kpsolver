@@ -1,4 +1,4 @@
-use crate::compatible_problem_type_trait::CompatibleProblemType;
+use crate::item::Item;
 use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedProblem, BoundedSolver};
 
@@ -17,12 +17,10 @@ struct KnapsackInfo {
 //algorithm implemented for types that can be cast into f64 (efficiency calculation)
 #[derive(Clone, Copy)]
 pub struct GeneralizedGreedy;
-impl<T, const S: usize> BoundedSolver<T, S> for GeneralizedGreedy 
-where
-    T: CompatibleProblemType + Into<f64>,
-{
-    fn solve(self, problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S> {
-        let mut items = problem.items;
+impl<const S: usize> BoundedSolver<f64, S> for GeneralizedGreedy {
+    fn solve(self, problem: BoundedProblem<f64, S>) 
+    -> ProblemKnapsacks<f64, S> {
+        let items = problem.items;
         let mut knapsacks = problem.knapsacks;
         let mut knapsack_order: Vec<KnapsackInfo> 
             = Vec::with_capacity(knapsacks.len());
@@ -36,12 +34,12 @@ where
         for r in 0..S {
             for item in items.iter() {
                 weight_d_sum[r] 
-                    += item.weights[r].into() * item.quantity as f64;
+                    += item.weights[r] * item.quantity;
             }
             
             for knapsack in knapsacks.iter() {
-                capacity_d_sum[r] += knapsack.capacity[r].into() 
-                                   - knapsack.weights()[r].into();
+                capacity_d_sum[r] += knapsack.capacity[r] 
+                                   - knapsack.weights()[r];
             }
 
             d_diff[r] = weight_d_sum[r] - capacity_d_sum[r];
@@ -56,15 +54,15 @@ where
         let mut items_toyoda: Vec<ItemInfo> = Vec::with_capacity(items.len());
         let mut total_items = 0;
         for (i, item) in items.iter().enumerate() {
-            total_items += item.quantity;
+            total_items += item.quantity as usize;
             items_toyoda.push(ItemInfo {
                 j: i,
-                c: item.quantity,
+                c: item.quantity as usize,
                 e: { 
                     //denominator from (9.35)
                     let mut sum = 0.0;
                     for r in 0..S {
-                        sum += item.weights[r].into() 
+                        sum += item.weights[r] 
                             * (d_diff[r] - largest_neg);
                     }
 
@@ -82,8 +80,8 @@ where
                 s: {
                     let mut score = 0.0;
                     for r in 0..S {
-                        score += (knapsack.capacity[r].into() - 
-                                  knapsack.weights()[r].into()) * d_rating[r];
+                        score += (knapsack.capacity[r] - 
+                                  knapsack.weights()[r]) * d_rating[r];
                     }
 
                     score
@@ -109,16 +107,16 @@ where
             for i in 0..item_info.c {
                 for r in 0..S {
                     let new_d_weight = k_w[r] 
-                                     + items[item_info.j].weights[r].into();
+                                     + items[item_info.j].weights[r];
                     if new_d_weight > 
-                    knapsacks[knapsack_order[k_i].j].capacity[r].into() - 
-                    knapsacks[knapsack_order[k_i].j].weights()[r].into() { //item does not fit
+                    knapsacks[knapsack_order[k_i].j].capacity[r] - 
+                    knapsacks[knapsack_order[k_i].j].weights()[r] { //item does not fit
                         for rf in r..S {
-                            if items[item_info.j].weights[rf].into() > 
+                            if items[item_info.j].weights[rf] > 
                             knapsacks[knapsack_order[k_i].j]
-                                .capacity[rf].into() - 
+                                .capacity[rf] - 
                             knapsacks[knapsack_order[k_i].j]
-                                .weights()[rf].into() { //item alone exceeds capacity
+                                .weights()[rf] { //item alone exceeds capacity
                                 excess_stack.push(ItemInfo {
                                     j: item_info.j,
                                     c: item_info.c - i,
@@ -173,7 +171,7 @@ where
 
                 value += items[item_info.j].value;
                 for r in 0..S {
-                    k_w[r] += items[item_info.j].weights[r].into();
+                    k_w[r] += items[item_info.j].weights[r];
                 }
             }
         }
@@ -201,20 +199,20 @@ where
                 }
 
                 let q1 = cumulative_weights[r] + 
-                         items[item_info.j].weights[r].into();
+                         items[item_info.j].weights[r];
                 let q2 = capacity_d_sum[r] - cumulative_weights[r] - 
-                    items[item_info.j].weights[r].into();
+                    items[item_info.j].weights[r];
                 if q2 == 0.0 {
                     item_info.e = 0.0;
                     continue 'item;
                 }
 
-                weight_d_sum[r] -= items[item_info.j].weights[r].into();
+                weight_d_sum[r] -= items[item_info.j].weights[r];
                 let q3 = weight_d_sum[r];
                 let v_t = q1 * q3.sqrt() / (capacity_d_sum[r] * q2.sqrt());
                 d_rating[r] += v_t;
                 if item_info.x {
-                    cumulative_weights[r] += items[item_info.j].weights[r].into();
+                    cumulative_weights[r] += items[item_info.j].weights[r];
                 }
 
                 if v_t > v {
@@ -229,8 +227,8 @@ where
         for knapsack_info in knapsack_order.iter_mut() {
             let mut score = 0.0;
             for r in 0..S {
-                score += knapsacks[knapsack_info.j].capacity[r].into() -
-                         knapsacks[knapsack_info.j].weights()[r].into() * 
+                score += knapsacks[knapsack_info.j].capacity[r] -
+                         knapsacks[knapsack_info.j].weights()[r] * 
                          d_rating[r];
             }
 
@@ -248,9 +246,9 @@ where
         k_w = [0.0; S];
         'item: for item_info in items_loulou.iter_mut() {
             for r in 0..S {
-                if items[item_info.j].weights[r].into() + k_w[r] > 
-                knapsacks[knapsack_order[k_i].j].capacity[r].into() -
-                knapsacks[knapsack_order[k_i].j].weights()[r].into() { //item is split item
+                if items[item_info.j].weights[r] + k_w[r] > 
+                knapsacks[knapsack_order[k_i].j].capacity[r] -
+                knapsacks[knapsack_order[k_i].j].weights()[r] { //item is split item
                     item_info.x = false;
                     split_value += items[item_info.j].value;
                     k_w = [0.0; S];
@@ -267,7 +265,7 @@ where
             item_info.x = true;
             value += items[item_info.j].value;
             for r in 0..S {
-                k_w[r] += items[item_info.j].weights[r].into();
+                k_w[r] += items[item_info.j].weights[r];
             }
         }
 
@@ -277,7 +275,13 @@ where
             if value > split_value {
                 if item_info.x {
                     while !knapsacks[knapsack_order[k_i].j]
-                    .add_mut(&mut items[item_info.j], 1) {
+                    .add(
+                        Item::<f64, S> {
+                            value: items[item_info.j].value,
+                            weights: items[item_info.j].weights,
+                            quantity: 1.0,
+                        }
+                    ) {
                         k_i += 1;
 
                         if k_i == knapsacks.len() {
@@ -287,8 +291,13 @@ where
                 }
             } else {
                 if !item_info.x {
-                    knapsacks[knapsack_order[k_i].j]
-                        .add_mut(&mut items[item_info.j], 1);
+                    knapsacks[knapsack_order[k_i].j].add(
+                        Item::<f64, S> {
+                            value: items[item_info.j].value,
+                            weights: items[item_info.j].weights,
+                            quantity: 1.0,
+                        }
+                    );
                     k_i += 1;
                 }
             }

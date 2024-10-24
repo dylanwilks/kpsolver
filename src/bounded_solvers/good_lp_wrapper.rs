@@ -1,4 +1,4 @@
-use crate::compatible_problem_type_trait::CompatibleProblemType;
+use crate::item::Item;
 use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedProblem, BoundedSolver};
 use good_lp::{constraint, Solution, SolverModel, variables, variable, Variable, 
@@ -9,12 +9,11 @@ macro_rules! good_lp_wrapper {
         $(
 #[derive(Clone, Copy)]
 pub struct $solver_name;
-impl<T, const S: usize> BoundedSolver<T, S> for $solver_name
-where
-    T: CompatibleProblemType + Into<f64>,
+impl<const S: usize> BoundedSolver<f64, S> for $solver_name
 {
-    fn solve(self, problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S> {
-        let mut items = problem.items;
+    fn solve(self, problem: BoundedProblem<f64, S>)
+    -> ProblemKnapsacks<f64, S> {
+        let items = problem.items;
         let mut knapsacks = problem.knapsacks;
         let m = knapsacks.len();
         let n = items.len();
@@ -24,13 +23,8 @@ where
         for _i in 0..m {
             let mut decision_var_i: Vec<Variable> = Vec::with_capacity(n);
             for j in 0..n {
-                if let Ok(q_j) = i32::try_from(items[j].quantity) {
-                    decision_var_i.push(variables.add(variable().integer()
-                                                                .min(0)
-                                                                .max(q_j)));
-                } else {
-                    panic!("Item quantity too large for problem.");
-                }
+                decision_var_i.push(variables.add(variable().integer()
+                                             .min(0).max(items[j].quantity)));
             }
 
             decision_var.push(decision_var_i);
@@ -48,12 +42,11 @@ where
             for k in 0..d {
                 let mut weight_sum = Expression::default();
                 for j in 0..n {
-                    weight_sum += items[j].weights[k].into() 
-                                * decision_var[i][j];
+                    weight_sum += items[j].weights[k] * decision_var[i][j];
                 }
 
                 model = model.with(constraint!(
-                        weight_sum <= knapsacks[i].capacity[k].into()
+                        weight_sum <= knapsacks[i].capacity[k]
                         ));
             }
         }
@@ -64,18 +57,20 @@ where
                 item_sum += decision_var[i][j];
             }
 
-            if let Ok(q_j) = i32::try_from(items[j].quantity) {
-                model = model.with(constraint!(item_sum <= q_j));
-            } else {
-                panic!("Item quantity too large for problem.");
-            }
+            model = model.with(constraint!(item_sum <= items[j].quantity));
         }
 
         let solution = model.solve().unwrap();
         for i in 0..m {
             for j in 0..n {
-                let x_ij = solution.value(decision_var[i][j]).round() as usize;
-                knapsacks[i].add_mut(&mut items[j], x_ij);
+                let x_ij = solution.value(decision_var[i][j]).round();
+                knapsacks[i].add(
+                    Item::<f64, S> {
+                        value: items[j].value,
+                        weights: items[j].weights,
+                        quantity: x_ij,
+                    }
+                );
             }
         }
 

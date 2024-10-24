@@ -6,12 +6,12 @@ pub use problem_type::{
 };
 pub use unbound_struct::unbound;
  
-mod compatible_problem_type_trait;
+pub mod compatible_problem_type_trait;
 #[macro_use]
 pub mod item;
 pub mod knapsack;
 pub mod problem_type;
-mod unbound_struct;
+pub mod unbound_struct;
 mod items_macro;
 mod knapsacks_macro;
 
