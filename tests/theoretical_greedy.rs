@@ -1,6 +1,6 @@
 use kpsolver::{
     Knapsack, ProblemKnapsacks,
-    binary_solvers,
+    bounded_solvers,
     items, knapsacks,
 };
 
@@ -18,7 +18,7 @@ fn random_sample_1() {
             [1.0]
     }
 
-    let solution = items.clone().insert_into(knapsack).using(binary_solvers::TheoreticalGreedy);
+    let solution = items.clone().insert_into(knapsack).using(bounded_solvers::TheoreticalGreedy);
     assert_eq!(solution.value(), 1.0);
     assert_eq!(solution[0].weights(), &[1.0]);
     knapsacks! {
@@ -26,7 +26,7 @@ fn random_sample_1() {
             [1.0]
     }
 
-    let solution_mut = items.insert_mut_into(knapsack_mut).using(binary_solvers::TheoreticalGreedy);
+    let solution_mut = items.insert_mut_into(knapsack_mut).using(bounded_solvers::TheoreticalGreedy);
     assert_eq!(solution_mut.value(), 1.0);
     assert_eq!(items[0].quantity, 1.0);
     assert_eq!(solution_mut[0].weights(), &[1.0]);
@@ -55,7 +55,7 @@ fn random_sample_2() {
             [295.0]
     }
 
-    let solution = items.insert_into(knapsack).using(binary_solvers::TheoreticalGreedy);
+    let solution = items.insert_into(knapsack).using(bounded_solvers::TheoreticalGreedy);
     assert!(solution.value() >= 151.0);
 }
 
@@ -75,7 +75,7 @@ fn random_sample_3() {
             [2.0]
     }
 
-    let solution = items.insert_into(knapsack).using(binary_solvers::TheoreticalGreedy);
+    let solution = items.insert_into(knapsack).using(bounded_solvers::TheoreticalGreedy);
     assert!(solution.value() >= 1.5);
 }
 
@@ -93,7 +93,7 @@ fn random_sample_multi_constraint_1() {
             [1.0, 1.0]
     }
 
-    let solution = items.clone().insert_into(knapsack).using(binary_solvers::TheoreticalGreedy);
+    let solution = items.clone().insert_into(knapsack).using(bounded_solvers::TheoreticalGreedy);
     assert_eq!(solution.value(), 1.0);
     assert_eq!(solution[0].weights(), &[1.0, 1.0]);
     knapsacks! {
@@ -101,7 +101,7 @@ fn random_sample_multi_constraint_1() {
             [1.0, 1.0]
     }
 
-    let solution_mut = items.insert_mut_into(knapsack_mut).using(binary_solvers::TheoreticalGreedy);
+    let solution_mut = items.insert_mut_into(knapsack_mut).using(bounded_solvers::TheoreticalGreedy);
     assert_eq!(solution_mut.value(), 1.0);
     assert_eq!(items[0].quantity, 1.0);
     assert_eq!(solution_mut[0].weights(), &[1.0, 1.0]);
@@ -130,7 +130,7 @@ fn random_sample_multi_constraint_2() {
             [269.0, 175.0]
     }
 
-    let solution = items.insert_into(knapsack).using(binary_solvers::TheoreticalGreedy);
+    let solution = items.insert_into(knapsack).using(bounded_solvers::TheoreticalGreedy);
     assert!(solution.value() >= 140.0);
 }
 
@@ -150,6 +150,6 @@ fn random_sample_multi_constraint_3() {
             [100.0, 70.0]
     }
 
-    let solution = items.insert_into(knapsack).using(binary_solvers::TheoreticalGreedy);
+    let solution = items.insert_into(knapsack).using(bounded_solvers::TheoreticalGreedy);
     assert!(solution.value() >=  50.0);
 }
