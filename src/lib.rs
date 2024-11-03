@@ -1,8 +1,16 @@
-pub use item::{Item, ItemBound, ItemUnbound, ProblemItems};
-pub use knapsack::{Knapsack, ProblemKnapsacks};
+pub use item::{
+    Item, ItemBinary, ItemUnbound, 
+    ProblemItems, ProblemItemsBinary, ProblemItemsUnbound
+};
+pub use knapsack::{
+    Knapsack, KnapsackBinary,
+    ProblemKnapsacks, ProblemKnapsacksBinary
+};
 
 pub use problem_type::{
-    BoundedProblem, BoundedSolver, UnboundedProblem, UnboundedSolver
+    BoundedProblem, BoundedSolver, 
+    BinaryProblem, BinarySolver,
+    UnboundedProblem, UnboundedSolver
 };
 pub use unbound_struct::unbound;
  
