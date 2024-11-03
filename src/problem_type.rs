@@ -1,9 +1,11 @@
 use crate::unbound_struct::unbound;
 use crate::compatible_problem_type_trait::CompatibleProblemType;
 use crate::item::{
-    ProblemItems, ProblemItemsBinary
+    ItemUnbound,
+    ProblemItems, ProblemItemsBinary, ProblemItemsUnbound
 };
 use crate::knapsack::{
+    Knapsack,
     ProblemKnapsacks, ProblemKnapsacksBinary
 };
 
@@ -118,11 +120,46 @@ where T: CompatibleProblemType,
     }
 }
 
+impl<T, const S: usize, N> BinarySolver<T, S> for N
+where
+    T: CompatibleProblemType,
+    N: BoundedSolver<T, S>,
+{
+    type Output = <N as BoundedSolver<T, S>>::Output;
+
+    fn solve(self, problem: BinaryProblem<T, S>) -> Self::Output {
+        let bounded_problem = 
+        BoundedProblem::<T, S> {
+            items: {
+                let mut problem_items = ProblemItems::<T,S>::new();
+                for item in problem.items {
+                    problem_items.add(item);
+                }
+
+                problem_items
+            },
+            knapsacks: {
+                let mut problem_knapsacks = ProblemKnapsacks::<T, S>::new();
+                for knapsack in problem.knapsacks {
+                    problem_knapsacks.add(Knapsack::<T, S>::new(knapsack.capacity));
+                    for (i, item) in knapsack.into_iter().enumerate() {
+                        problem_knapsacks[i].add(item);
+                    }
+                }
+
+                problem_knapsacks
+            },
+        };
+
+        <N as BoundedSolver<T, S>>::solve(self, bounded_problem)
+    }
+}
+
 pub struct UnboundedProblem<T, const S: usize>
 where
     T: CompatibleProblemType,
 {
-    pub items: ProblemItems<T, S, unbound>,
+    pub items: ProblemItemsUnbound<T, S>,
     pub knapsacks: ProblemKnapsacks<T, S>,
 }
 
@@ -143,5 +180,46 @@ where T: CompatibleProblemType,
     where N: UnboundedSolver<T, S>,
     {
         solver.solve(self)
+    }
+}
+
+impl<T, const S: usize, N> BoundedSolver<T, S> for N
+where
+    T: CompatibleProblemType,
+    N: UnboundedSolver<T, S>,
+{
+    type Output = <N as UnboundedSolver<T, S>>::Output;
+
+    fn solve(self, problem: BoundedProblem<T, S>) -> Self::Output {
+        let unbounded_problem = 
+        UnboundedProblem::<T, S> {
+            items: {
+                let mut problem_items = ProblemItemsUnbound::<T, S>::new();
+                for item in problem.items {
+                    problem_items.add(
+                        ItemUnbound::<T, S> {
+                            value: item.value,
+                            weights: item.weights,
+                            quantity: unbound,
+                        }
+                    );
+                }
+
+                problem_items
+            },
+            knapsacks: {
+                let mut problem_knapsacks = ProblemKnapsacks::<T, S>::new();
+                for knapsack in problem.knapsacks {
+                    problem_knapsacks.add(Knapsack::<T, S>::new(knapsack.capacity));
+                    for (i, item) in knapsack.into_iter().enumerate() {
+                        problem_knapsacks[i].add(item);
+                    }
+                }
+
+                problem_knapsacks
+            },
+        };
+
+        <N as UnboundedSolver<T, S>>::solve(self, unbounded_problem)
     }
 }
