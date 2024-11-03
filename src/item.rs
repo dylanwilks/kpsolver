@@ -24,6 +24,7 @@ where
     pub quantity: N,
 }
 
+pub type ItemBinary<T, const S: usize> = Item::<T, S>;
 pub type ItemUnbound<T, const S: usize> = Item::<T, S, unbound>;
 
 impl<T, const S: usize, N> Item<T, S, N>
@@ -56,6 +57,8 @@ where
 {
     items: IndexMap<(u64, [u64; S]), Item<T, S, N>>,
 }
+
+pub type ProblemItemsUnbound<T, const S: usize> = ProblemItems<T, S, unbound>;
 
 impl<T, const S: usize> ProblemItems<T, S>
 where T: CompatibleProblemType,
