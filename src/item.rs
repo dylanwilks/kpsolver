@@ -24,7 +24,6 @@ where
     pub quantity: N,
 }
 
-pub type ItemBound<T, const S: usize> = Item::<T, S>;
 pub type ItemUnbound<T, const S: usize> = Item::<T, S, unbound>;
 
 impl<T, const S: usize, N> Item<T, S, N>
