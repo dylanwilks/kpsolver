@@ -7,6 +7,8 @@ use crate::problem_type::{BoundedProblem, BoundedSolver};
 #[derive(Clone, Copy)]
 pub struct Dynamic;
 impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
+    type Output = ProblemKnapsacks<u32, S>;
+
     fn solve(self, mut problem: BoundedProblem<u32, S>) 
     -> ProblemKnapsacks<u32, S> {
         //find and create the dimensions of the memo matrix

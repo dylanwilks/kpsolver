@@ -7,6 +7,62 @@ use crate::knapsack::{
     ProblemKnapsacks, ProblemKnapsacksBinary
 };
 
+pub struct BinaryProblem<T, const S: usize>
+where T: CompatibleProblemType,
+{
+    pub items: ProblemItemsBinary<T, S>,
+    pub knapsacks: ProblemKnapsacksBinary<T, S>,
+}
+
+pub struct BinaryProblemMut<'a, T, const S: usize>
+where T: CompatibleProblemType,
+{
+    pub items: &'a mut ProblemItemsBinary<T, S>,
+    pub knapsacks: ProblemKnapsacksBinary<T, S>,
+}
+
+pub trait BinarySolver<T, const S: usize>: Clone + Copy
+where T: CompatibleProblemType {
+    type Output;
+
+    //Required methods
+    fn solve(self, problem: BinaryProblem<T, S>) -> Self::Output;
+}
+
+impl<T, const S: usize> BinaryProblem<T, S> 
+where T: CompatibleProblemType,
+{
+    pub fn using<N>(self, solver: N) -> <N as BinarySolver<T, S>>::Output 
+    where N: BinarySolver<T, S>,
+    {
+        solver.solve(self)
+    }
+}
+
+impl<'a, T, const S: usize> BinaryProblemMut<'a, T, S>
+where T: CompatibleProblemType,
+{
+    pub fn using(self, solver: impl BinarySolver<T, S, Output = ProblemKnapsacksBinary<T, S>>) 
+    -> ProblemKnapsacksBinary<T, S> {
+        let solution = solver.solve(BinaryProblem::<T, S> {
+            items: self.items.clone(),
+            knapsacks: self.knapsacks,
+        });
+
+        for knapsack in &solution {
+            for item in knapsack {
+                for mut_item in &mut *self.items {
+                    if item == mut_item {
+                        mut_item.quantity -= item.quantity;
+                        continue;
+                    }
+                }
+            }
+        }
+
+        solution
+    }
+}
 pub struct BoundedProblem<T, const S: usize>
 where T: CompatibleProblemType,
 {
@@ -24,46 +80,41 @@ where T: CompatibleProblemType,
 pub trait BoundedSolver<T, const S: usize>: Clone + Copy
 where T: CompatibleProblemType,
 {
+    type Output;
+
     //Required methods
-    fn solve(self, problem: BoundedProblem<T, S>) -> ProblemKnapsacks<T, S>;
-
-    //Provided methods
-    fn solve_mut(self, problem: BoundedProblemMut<'_, T, S>) 
-    -> ProblemKnapsacks<T, S> {
-        let solution = self.solve(BoundedProblem::<T, S> {
-            items: problem.items.clone(),
-            knapsacks: problem.knapsacks,
-        });
-
-        for knapsack in &solution {
-            for item in knapsack {
-                problem.items.get_item_mut((item.value, item.weights))
-                             .unwrap()
-                             .quantity -= item.quantity;
-            }
-        }
-
-        solution
-    }
+    fn solve(self, problem: BoundedProblem<T, S>) -> Self::Output;
 }
 
 impl<T, const S: usize> BoundedProblem<T, S> 
-where
-    T: CompatibleProblemType,
+where T: CompatibleProblemType,
 {
-    pub fn using(self, solver: impl BoundedSolver<T, S>) 
-    -> ProblemKnapsacks<T, S> {
+    pub fn using<N>(self, solver: N) -> <N as BoundedSolver<T, S>>::Output
+    where N: BoundedSolver<T, S>,
+    {
         solver.solve(self)
     }
 }
 
 impl<'a, T, const S: usize> BoundedProblemMut<'a, T, S>
-where
-    T: CompatibleProblemType,
+where T: CompatibleProblemType,
 {
-    pub fn using(self, solver: impl BoundedSolver<T, S>)
+    pub fn using(self, solver: impl BoundedSolver<T, S, Output = ProblemKnapsacks<T, S>>)
     -> ProblemKnapsacks<T, S> {
-        solver.solve_mut(self)
+        let solution = solver.solve(BoundedProblem::<T, S> {
+            items: self.items.clone(),
+            knapsacks: self.knapsacks,
+        });
+
+        for knapsack in &solution {
+            for item in knapsack {
+                self.items.get_item_mut((item.value, item.weights))
+                          .unwrap()
+                          .quantity -= item.quantity;
+            }
+        }
+
+        solution
     }
 }
 
@@ -79,76 +130,18 @@ pub trait UnboundedSolver<T, const S: usize>: Clone + Copy
 where
     T: CompatibleProblemType,
 {
+    type Output;
+
     //Required methods
-    fn solve(self, problem: UnboundedProblem<T, S>) -> ProblemKnapsacks<T, S>;
+    fn solve(self, problem: UnboundedProblem<T, S>) -> Self::Output;
 }
 
 impl<T, const S: usize> UnboundedProblem<T, S> 
-where
-    T: CompatibleProblemType,
-{
-    pub fn using(self, solver: impl UnboundedSolver<T, S>) 
-    -> ProblemKnapsacks<T, S> {
-        solver.solve(self)
-    }
-}
-
-pub struct BinaryProblem<T, const S: usize>
 where T: CompatibleProblemType,
 {
-    pub items: ProblemItemsBinary<T, S>,
-    pub knapsacks: ProblemKnapsacksBinary<T, S>,
-}
-
-pub struct BinaryProblemMut<'a, T, const S: usize>
-where T: CompatibleProblemType,
-{
-    pub items: &'a mut ProblemItemsBinary<T, S>,
-    pub knapsacks: ProblemKnapsacksBinary<T, S>,
-}
-
-pub trait BinarySolver<T, const S: usize>: Clone + Copy
-where T: CompatibleProblemType {
-    //Required methods
-    fn solve(self, problem: BinaryProblem<T, S>) -> ProblemKnapsacksBinary<T, S>;
-
-    //Provided methods
-    fn solve_mut(self, problem: BinaryProblemMut<'_, T, S>) 
-    -> ProblemKnapsacksBinary<T, S> {
-        let solution = self.solve(BinaryProblem::<T, S> {
-            items: problem.items.clone(),
-            knapsacks: problem.knapsacks,
-        });
-
-        for knapsack in &solution {
-            for item in knapsack {
-                for mut_item in &mut *problem.items {
-                    if item == mut_item {
-                        mut_item.quantity -= item.quantity;
-                        continue;
-                    }
-                }
-            }
-        }
-
-        solution
-    }
-}
-
-impl<T, const S: usize> BinaryProblem<T, S> 
-where
-    T: CompatibleProblemType,
-{
-    pub fn using(self, solver: impl BinarySolver<T, S>) -> ProblemKnapsacksBinary<T, S> {
+    pub fn using<N>(self, solver: N) -> <N as UnboundedSolver<T, S>>::Output
+    where N: UnboundedSolver<T, S>,
+    {
         solver.solve(self)
-    }
-}
-
-impl<'a, T, const S: usize> BinaryProblemMut<'a, T, S>
-where
-    T: CompatibleProblemType,
-{
-    pub fn using(self, solver: impl BinarySolver<T, S>) -> ProblemKnapsacksBinary<T, S> {
-        solver.solve_mut(self)
     }
 }

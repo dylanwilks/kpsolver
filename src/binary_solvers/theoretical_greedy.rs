@@ -12,6 +12,8 @@ struct ItemPos<const S: usize> {
 #[derive(Clone, Copy)]
 pub struct TheoreticalGreedy;
 impl<const S: usize> BoundedSolver<f64, S> for TheoreticalGreedy {
+    type Output = ProblemKnapsacks<f64, S>;
+
     fn solve(self, mut problem: BoundedProblem<f64, S>) 
     -> ProblemKnapsacks<f64, S> {
         let items = problem.items;

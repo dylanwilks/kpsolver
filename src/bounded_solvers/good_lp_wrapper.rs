@@ -11,6 +11,8 @@ macro_rules! good_lp_wrapper {
 pub struct $solver_name;
 impl<const S: usize> BoundedSolver<f64, S> for $solver_name
 {
+    type Output = ProblemKnapsacks<f64, S>;
+
     fn solve(self, problem: BoundedProblem<f64, S>)
     -> ProblemKnapsacks<f64, S> {
         let items = problem.items;

@@ -18,6 +18,8 @@ struct KnapsackInfo {
 #[derive(Clone, Copy)]
 pub struct GeneralizedGreedy;
 impl<const S: usize> BoundedSolver<f64, S> for GeneralizedGreedy {
+    type Output = ProblemKnapsacks<f64, S>;
+
     fn solve(self, problem: BoundedProblem<f64, S>) 
     -> ProblemKnapsacks<f64, S> {
         let items = problem.items;
