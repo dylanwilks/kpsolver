@@ -31,7 +31,7 @@ macro_rules! items {
                                     <$item_type as $crate::
                                           compatible_problem_type_trait::
                                           CompatibleProblemType
-                                     >::default_quantity()
+                                     >::identity()
                               ),
                 
                 });

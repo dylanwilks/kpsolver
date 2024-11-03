@@ -192,7 +192,7 @@ fn random_sample_multi_knapsack_2() {
     items! {
         items<f64, 1>:
             /* Value */ /* Weights */ /* Quantity (?) */
-            10.0,       [48.0];
+            10.0,       [48.0]; 
             30.0,       [30.0];
             25.0,       [42.0];
             50.0,       [36.0];

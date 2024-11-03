@@ -12,12 +12,9 @@ AddAssign + SubAssign + MulAssign
     // Required methods
     fn type_to_key(value: Self) -> u64;
     fn key_to_type(key: u64) -> Self;
+    fn identity() -> Self;
 
     // Provided methods
-    fn default_quantity() -> Self {
-        Self::default()
-    }
-
     fn null() -> Option<Self> 
     where Self: Sized,
     {
@@ -61,7 +58,7 @@ macro_rules! impl_CompatibleProblemType_for_unsigned {
                     key as Self 
                 }
 
-                fn default_quantity() -> Self { 
+                fn identity() -> Self { 
                     1 
                 }
             }
@@ -83,7 +80,7 @@ macro_rules! impl_CompatibleProblemType_for_floats {
                     unsafe { std::mem::transmute::<u64, f64>(key) as Self }
                 }
 
-                fn default_quantity() -> Self { 
+                fn identity() -> Self { 
                     1.0 
                 }
             }
