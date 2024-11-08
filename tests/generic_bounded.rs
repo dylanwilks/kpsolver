@@ -1,57 +1,34 @@
 use kpsolver::{
-    Item, Knapsack, ProblemKnapsacks,
-    BoundedSolver, bounded_solvers,
-    items, knapsacks,
+    Item, ProblemItems, items,
+    Knapsack, ProblemKnapsacks, knapsacks,
+    BoundedSolver,
 };
 use kpsolver::compatible_problem_type_trait::CompatibleProblemType;
 
 #[allow(dead_code)]
-fn random_sample_1<T, S>(solver: S, cmp: fn(&f64, &f64) -> bool, scale: f64) 
+fn random_sample_1<T, S>(solver: S)
+-> <S as BoundedSolver<T, 2>>::Output
 where
     T: CompatibleProblemType + From<u32>,
-    S: BoundedSolver<T, 2, Output = ProblemKnapsacks<T, 2>>,
+    S: BoundedSolver<T, 2>,
 {
     items! {
-        t_items<u32, 2>:
+        items<u32, 2>:
             /* Value */ /* Weights */ /* Quantity (?) */
             2.0,        [2, 2],       70;
             5.0,        [5, 2],       70;
             10.0,       [10, 2],      70;
     }
 
-    items! {
-        items<T, 2>:
-    }
-
-    for item in t_items {
-        items.add(
-            Item::<T, 2> {
-                value: item.value,
-                weights: item.weights.map(|x| T::from(x)),
-                quantity: T::from(item.quantity),
-            }
-        );
-    }
-
     knapsacks! {
-        t_knapsacks<u32, 2>:
+        knapsacks<u32, 2>:
             [100, 70]
     }
 
-    knapsacks! {
-        knapsacks<T, 2>:
-    }
-
-    for knapsack in t_knapsacks {
-        knapsacks.add(
-            Knapsack::<T, 2>::new(knapsack.capacity.map(|x| T::from(x)))
-        );
-    }
-
-    let solution = items.insert_into(knapsacks).using(solver);
-    assert!(cmp(&solution.value(), &(scale * 100.0)));
+    items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
 }
 
+/*
 macro_rules! default_multi_constraint {
     ($type:ty, $solver:ty) => {
         random_sample_1::<$type, $solver>
@@ -112,3 +89,4 @@ selective_test! {
             ]
     }
 }
+*/

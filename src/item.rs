@@ -49,6 +49,32 @@ where
     }
 }
 
+impl<T, const S: usize> Item<T, S>
+where T: CompatibleProblemType,
+{
+    pub fn to_generic<N>(self) -> Item<N, S> 
+    where N: CompatibleProblemType + From<T>, {
+        Item::<N, S> {
+            value: self.value,
+            weights: self.weights.map(|x| N::from(x)),
+            quantity: N::from(self.quantity),
+        }
+    }
+}
+
+impl<T, const S: usize> ItemUnbound<T, S>
+where T: CompatibleProblemType,
+{
+    pub fn to_generic<N>(&self) -> ItemUnbound<N, S> 
+    where N: CompatibleProblemType + From<T>, {
+        ItemUnbound::<N, S> {
+            value: self.value,
+            weights: self.weights.map(|x| N::from(x)),
+            quantity: unbound,
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct ProblemItems<T, const S: usize, N = T>
 where
@@ -131,9 +157,19 @@ where T: CompatibleProblemType,
             knapsacks: knapsacks,
         }
     }
+
+    pub fn to_generic<N>(self) -> ProblemItems<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut items = ProblemItems::<N, S>::new();
+        for item in self {
+            items.add(item.to_generic::<N>());
+        }
+
+        items
+    }
 }
 
-impl<T, const S: usize> ProblemItems<T, S, unbound>
+impl<T, const S: usize> ProblemItemsUnbound<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -195,6 +231,16 @@ where
             items: self,
             knapsacks: knapsacks,
         }
+    }
+
+    pub fn to_generic<N>(self) -> ProblemItemsUnbound<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut items = ProblemItemsUnbound::<N, S>::new();
+        for item in self {
+            items.add(item.to_generic::<N>());
+        }
+
+        items
     }
 }
 
@@ -316,6 +362,16 @@ where T: CompatibleProblemType,
             items: self,
             knapsacks: knapsacks,
         }
+    }
+
+    pub fn to_generic<N>(self) -> ProblemItemsBinary<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut items = ProblemItemsBinary::<N, S>::new();
+        for item in self {
+            items.add(item.to_generic::<N>());
+        }
+
+        items
     }
 }
 
