@@ -12,10 +12,6 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
     fn solve(self, mut problem: BoundedProblem<u32, S>) 
     -> ProblemKnapsacks<u32, S> {
         //find and create the dimensions of the memo matrix
-        if problem.knapsacks.len() != 1 {
-            panic!("ERROR::DYNAMIC_ALGORITHM::SUPPORTS_ONLY_1_KNAPSACK");
-        }
-
         let items = problem.items;
         let knapsack = &mut problem.knapsacks[0];
 
