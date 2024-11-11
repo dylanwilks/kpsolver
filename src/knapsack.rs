@@ -487,7 +487,7 @@ where
 
     pub fn to_generic<N>(self) -> BinaryKnapsack<N, S>
     where N: CompatibleProblemType + From<T>, {
-        let mut knapsack = BinaryKnapsack::<N, S>::new(self.weights.map(|x| N::from(x)));
+        let mut knapsack = BinaryKnapsack::<N, S>::new(self.capacity.map(|x| N::from(x)));
         for item in self {
             knapsack.add(item.to_generic::<N>());
         }
