@@ -7,7 +7,6 @@ use crate::knapsack::{
 };
 use crate::problem_type::{
     BoundedProblem, BoundedProblemMut, 
-    UnboundedProblem, 
     BinaryProblem, BinaryProblemMut
 };
 
@@ -86,20 +85,22 @@ where
 
 pub type ProblemItemsUnbound<T, const S: usize> = ProblemItems<T, S, unbound>;
 
-impl<T, const S: usize> ProblemItems<T, S>
-where T: CompatibleProblemType,
+impl<T, const S: usize, N> ProblemItems<T, S, N>
+where 
+    T: CompatibleProblemType,
+    N: UnboundCompatibility + std::ops::AddAssign,
 {
     pub fn new() -> Self {
-        ProblemItems::<T, S> {
+        ProblemItems::<T, S, N> {
             items: IndexMap::new(),
         }
     }
 
-    pub fn get_item(&self, key: (f64, [T; S])) -> Option<&Item<T, S>> {
+    pub fn get_item(&self, key: (f64, [T; S])) -> Option<&Item<T, S, N>> {
         self.items.get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
-    pub fn get_item_mut(&mut self, key: (f64, [T; S])) -> Option<&mut Item<T, S>> {
+    pub fn get_item_mut(&mut self, key: (f64, [T; S])) -> Option<&mut Item<T, S, N>> {
         self.items.get_mut(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
@@ -107,7 +108,7 @@ where T: CompatibleProblemType,
         self.items.get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
-    pub fn add(&mut self, item: Item<T, S>) {
+    pub fn add(&mut self, item: Item<T, S, N>) {
         if let Some(stored_item) = self.items.get_mut(&item.to_key()) {
             stored_item.quantity += item.quantity;
         } else {
@@ -115,11 +116,11 @@ where T: CompatibleProblemType,
         }
     }
 
-    pub fn remove_item(&mut self, key: (f64, [T; S])) -> Option<Item<T, S>> {
+    pub fn remove_item(&mut self, key: (f64, [T; S])) -> Option<Item<T, S, N>> {
         self.items.shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
-    pub fn remove_index(&mut self, index: usize) -> Option<Item<T, S>> {
+    pub fn remove_index(&mut self, index: usize) -> Option<Item<T, S, N>> {
         match self.items.shift_remove_index(index) {
             Some((_, item)) => Some(item),
             None => None,
@@ -130,34 +131,39 @@ where T: CompatibleProblemType,
         self.items.len()
     }
 
-    pub fn into_iter(self) -> indexmap::map::IntoValues<(u64, [u64; S]), Item<T, S>> {
+    pub fn into_iter(self) -> indexmap::map::IntoValues<(u64, [u64; S]), Item<T, S, N>> {
         self.items.into_values()
     }
 
-    pub fn iter<'a>(&'a self) -> indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S>> {
+    pub fn iter<'a>(&'a self) -> indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S, N>> {
         self.items.values()
     }
 
     pub fn iter_mut<'a>(&'a mut self) 
-    -> indexmap::map::ValuesMut<'a, (u64, [u64; S]), Item<T, S>> {
+    -> indexmap::map::ValuesMut<'a, (u64, [u64; S]), Item<T, S, N>> {
         self.items.values_mut()
     }
 
-    pub fn insert_into(self, knapsacks: ProblemKnapsacks<T, S>) -> BoundedProblem<T, S> {
-        BoundedProblem::<T, S> {
+    pub fn insert_into(self, knapsacks: ProblemKnapsacks<T, S>) -> BoundedProblem<T, S, N> {
+        BoundedProblem::<T, S, N> {
             items: self,
             knapsacks: knapsacks,
         }
     }
 
     pub fn insert_mut_into<'a>(&'a mut self, knapsacks: ProblemKnapsacks<T, S>)
-    -> BoundedProblemMut<'a, T, S> {
-        BoundedProblemMut::<'a, T, S> {
+    -> BoundedProblemMut<'a, T, S, N> {
+        BoundedProblemMut::<'a, T, S, N> {
             items: self,
             knapsacks: knapsacks,
         }
     }
 
+}
+
+impl<T, const S: usize> ProblemItems<T, S> 
+where T: CompatibleProblemType,
+{
     pub fn to_generic<N>(self) -> ProblemItems<N, S>
     where N: CompatibleProblemType + From<T>, {
         let mut items = ProblemItems::<N, S>::new();
@@ -170,69 +176,8 @@ where T: CompatibleProblemType,
 }
 
 impl<T, const S: usize> ProblemItemsUnbound<T, S>
-where
-    T: CompatibleProblemType,
+where T: CompatibleProblemType,
 {
-    pub fn new() -> Self {
-        ProblemItems::<T, S, unbound> {
-            items: IndexMap::new(),
-        }
-    }
-
-    pub fn get_item(&self, key: (f64, [T; S])) -> Option<&Item<T, S, unbound>> {
-        self.items.get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
-    }
-
-    pub fn get_item_mut(&mut self, key: (f64, [T; S])) -> Option<&mut Item<T, S, unbound>> {
-        self.items.get_mut(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
-    }
-
-    pub fn get_index_of(&self, key: (f64, [T; S])) -> Option<usize> {
-        self.items.get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
-    }
-
-    pub fn add(&mut self, item: Item<T, S, unbound>) {
-        if let None = self.items.get_mut(&item.to_key()) {
-            self.items.insert(item.to_key(), item);
-        }
-    }
-
-    pub fn remove_item(&mut self, key: (f64, [T; S])) -> Option<Item<T, S, unbound>> {
-        self.items.shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
-    }
-
-    pub fn remove_at_index(&mut self, index: usize) -> Option<Item<T, S, unbound>> {
-        match self.items.shift_remove_index(index) {
-            Some((_, item)) => Some(item),
-            None => None,
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        self.items.len()
-    }
-
-    pub fn into_iter(self) -> indexmap::map::IntoValues<(u64, [u64; S]), Item<T, S, unbound>> {
-        self.items.into_values()
-    }
-
-    pub fn iter<'a>(&'a self) -> indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S, unbound>> {
-        self.items.values()
-    }
-
-    pub fn iter_mut<'a>(&'a mut self) 
-    -> indexmap::map::ValuesMut<'a, (u64, [u64; S]), Item<T, S, unbound>> {
-        self.items.values_mut()
-    }
-
-    pub fn insert_into(self, knapsacks: ProblemKnapsacks<T, S>) 
-    -> UnboundedProblem<T, S> {
-        UnboundedProblem::<T, S> {
-            items: self,
-            knapsacks: knapsacks,
-        }
-    }
-
     pub fn to_generic<N>(self) -> ProblemItemsUnbound<N, S>
     where N: CompatibleProblemType + From<T>, {
         let mut items = ProblemItemsUnbound::<N, S>::new();

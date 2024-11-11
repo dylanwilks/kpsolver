@@ -1,5 +1,7 @@
 use crate::unbound_struct::unbound;
-use crate::compatible_problem_type_trait::CompatibleProblemType;
+use crate::compatible_problem_type_trait::{
+    CompatibleProblemType, UnboundCompatibility
+};
 use crate::item::{
     ItemUnbound,
     ProblemItems, ProblemItemsBinary, ProblemItemsUnbound
@@ -65,17 +67,21 @@ where T: CompatibleProblemType,
         solution
     }
 }
-pub struct BoundedProblem<T, const S: usize>
-where T: CompatibleProblemType,
+pub struct BoundedProblem<T, const S: usize, N = T>
+where 
+    T: CompatibleProblemType,
+    N: UnboundCompatibility,
 {
-    pub items: ProblemItems<T, S>,
+    pub items: ProblemItems<T, S, N>,
     pub knapsacks: ProblemKnapsacks<T, S>,
 }
 
-pub struct BoundedProblemMut<'a, T, const S: usize>
-where T: CompatibleProblemType,
+pub struct BoundedProblemMut<'a, T, const S: usize, N = T>
+where 
+    T: CompatibleProblemType,
+    N: UnboundCompatibility,
 {
-    pub items: &'a mut ProblemItems<T, S>,
+    pub items: &'a mut ProblemItems<T, S, N>,
     pub knapsacks: ProblemKnapsacks<T, S>,
 }
 
@@ -155,13 +161,8 @@ where
     }
 }
 
-pub struct UnboundedProblem<T, const S: usize>
-where
-    T: CompatibleProblemType,
-{
-    pub items: ProblemItemsUnbound<T, S>,
-    pub knapsacks: ProblemKnapsacks<T, S>,
-}
+pub type UnboundedProblem<T, const S: usize> = BoundedProblem::<T, S, unbound>;
+pub type UnboundedProblemMut<'a, T, const S: usize> = BoundedProblemMut::<'a, T, S, unbound>;
 
 pub trait UnboundedSolver<T, const S: usize>: Clone + Copy
 where
@@ -180,6 +181,20 @@ where T: CompatibleProblemType,
     where N: UnboundedSolver<T, S>,
     {
         solver.solve(self)
+    }
+}
+
+impl<'a, T, const S: usize> UnboundedProblemMut<'a, T, S>
+where T: CompatibleProblemType,
+{
+    pub fn using(self, solver: impl UnboundedSolver<T, S, Output = ProblemKnapsacks<T, S>>)
+    -> ProblemKnapsacks<T, S> {
+        let solution = solver.solve(UnboundedProblem::<T, S> {
+            items: self.items.clone(),
+            knapsacks: self.knapsacks,
+        });
+
+        solution
     }
 }
 
