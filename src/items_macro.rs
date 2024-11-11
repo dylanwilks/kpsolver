@@ -55,16 +55,14 @@ macro_rules! items {
     )*
     ) => {
             let mut $items_name = $crate::item::
-            ProblemItems::<$item_type, 
-                           $length, 
-                           unbounded
-                           >::new();
+            UnboundedProblemItems::<$item_type, 
+                                    $length, 
+                                    >::new();
             $(
                 $items_name.add($crate::item::
-                Item::<$item_type, 
-                       $length,
-                       unbounded
-                       > {
+                UnboundedItem::<$item_type, 
+                                $length,
+                                > {
                     value: $val,
                     weights: [$($weights),*],
                     quantity: $crate::items!(
@@ -144,18 +142,16 @@ macro_rules! items_binary {
     ) => {
             let mut $items_name = $crate::item::
             BinaryProblemItems::<$item_type, 
-                                 $length, 
-                                 $item_type
+                                 $length
                                  >::new();
             $(
                 $items_name.add($crate::item::
                 Item::<$item_type, 
-                       $length, 
-                       $item_type
+                       $length
                        > {
                     value: $val,
                     weights: [$($weights),*],
-                    quantity: $crate::items!(
+                    quantity: $crate::items_binary!(
                                     @items_quantity, 
                                     $($quantity,)?  
                                     <$item_type as $crate::
@@ -172,7 +168,7 @@ macro_rules! items_binary {
     $items_name:ident 
     <
         $item_type:ty,
-        1,
+        1
     >:
     $(
         $val:expr,
