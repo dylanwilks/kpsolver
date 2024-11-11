@@ -15,7 +15,7 @@ fn random_sample_1() {
 
     knapsacks! {
         knapsack<u32, 1>:
-            [1]
+            [1];
     }
 
     let solution = items.clone().insert_into(knapsack).using(bounded_solvers::Dynamic);
@@ -23,7 +23,7 @@ fn random_sample_1() {
     assert_eq!(solution[0].weights(), &[1_u32]);
     knapsacks! {
         knapsack_mut<u32, 1>:
-            [1]
+            [1];
     }
 
     let solution_mut = items.insert_mut_into(knapsack_mut).using(bounded_solvers::Dynamic);
@@ -52,7 +52,7 @@ fn random_sample_2() {
 
     knapsacks! {
         knapsack<u32, 1>:
-            [295]
+            [295];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::Dynamic);
@@ -72,7 +72,7 @@ fn random_sample_3() {
 
     knapsacks! {
         knapsack<u32, 1>:
-            [2]
+            [2];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::Dynamic);
@@ -90,7 +90,7 @@ fn random_sample_multi_constraint_1() {
 
     knapsacks! {
         knapsack<u32, 2>:
-            [1, 1]
+            [1, 1];
     }
 
     let solution = items.clone().insert_into(knapsack).using(bounded_solvers::Dynamic);
@@ -98,7 +98,7 @@ fn random_sample_multi_constraint_1() {
     assert_eq!(solution[0].weights(), &[1_u32, 1_u32]);
     knapsacks! {
         knapsack_mut<u32, 2>:
-            [1, 1]
+            [1, 1];
     }
 
     let solution_mut = items.insert_mut_into(knapsack_mut).using(bounded_solvers::Dynamic);
@@ -127,7 +127,7 @@ fn random_sample_multi_constraint_2() {
 
     knapsacks! {
         knapsack<u32, 2>:
-            [269, 175]
+            [269, 175];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::Dynamic);
@@ -147,7 +147,7 @@ fn random_sample_multi_constraint_3() {
 
     knapsacks! {
         knapsack<u32, 2>:
-            [100, 70]
+            [100, 70];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::Dynamic);

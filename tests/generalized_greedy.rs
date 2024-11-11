@@ -15,7 +15,7 @@ fn random_sample_1() {
 
     knapsacks! {
         knapsack<f64, 1>:
-            [1.0]
+            [1.0];
     }
 
     let solution = items.clone().insert_into(knapsack).using(bounded_solvers::GeneralizedGreedy);
@@ -23,7 +23,7 @@ fn random_sample_1() {
     assert_eq!(solution[0].weights(), &[1.0]);
     knapsacks! {
         knapsack_mut<f64, 1>:
-            [1.0]
+            [1.0];
     }
 
     let solution_mut = items.insert_mut_into(knapsack_mut).using(bounded_solvers::GeneralizedGreedy);
@@ -52,7 +52,7 @@ fn random_sample_2() {
 
     knapsacks! {
         knapsack<f64, 1>:
-            [295.0]
+            [295.0];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::GeneralizedGreedy);
@@ -72,7 +72,7 @@ fn random_sample_3() {
 
     knapsacks! {
         knapsack<f64, 1>:
-            [2.0]
+            [2.0];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::GeneralizedGreedy);
@@ -90,7 +90,7 @@ fn random_sample_multi_constraint_1() {
 
     knapsacks! {
         knapsack<f64, 2>:
-            [1.0, 1.0]
+            [1.0, 1.0];
     }
 
     let solution = items.clone().insert_into(knapsack).using(bounded_solvers::GeneralizedGreedy);
@@ -98,7 +98,7 @@ fn random_sample_multi_constraint_1() {
     assert_eq!(solution[0].weights(), &[1.0, 1.0]);
     knapsacks! {
         knapsack_mut<f64, 2>:
-            [1.0, 1.0]
+            [1.0, 1.0];
     }
 
     let solution_mut = items.insert_mut_into(knapsack_mut).using(bounded_solvers::GeneralizedGreedy);
@@ -127,7 +127,7 @@ fn random_sample_multi_constraint_2() {
 
     knapsacks! {
         knapsack<f64, 2>:
-            [269.0, 175.0]
+            [269.0, 175.0];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::GeneralizedGreedy);
@@ -147,7 +147,7 @@ fn random_sample_multi_constraint_3() {
 
     knapsacks! {
         knapsack<f64, 2>:
-            [100.0, 70.0]
+            [100.0, 70.0];
     }
 
     let solution = items.insert_into(knapsack).using(bounded_solvers::GeneralizedGreedy);
@@ -165,8 +165,8 @@ fn random_sample_multi_knapsack_1() {
 
     knapsacks! {
         knapsacks<f64, 1>:
-            [1.0]
-            [1.0]
+            [1.0];
+            [1.0];
     }
 
     let solution = items.clone().insert_into(knapsacks).using(bounded_solvers::GeneralizedGreedy);
@@ -175,8 +175,8 @@ fn random_sample_multi_knapsack_1() {
     assert_eq!(solution[1].weights(), &[1.0]);
     knapsacks! {
         knapsacks_mut<f64, 1>:
-            [1.0]
-            [1.0]
+            [1.0];
+            [1.0];
     }
 
     let solution_mut = items.insert_mut_into(knapsacks_mut).using(bounded_solvers::GeneralizedGreedy);
@@ -211,11 +211,11 @@ fn random_sample_multi_knapsack_2() {
 
     knapsacks! {
         knapsacks<f64, 1>:
-            [100.0]
-            [100.0]
-            [100.0]
-            [100.0]
-            [100.0]
+            [100.0];
+            [100.0];
+            [100.0];
+            [100.0];
+            [100.0];
     }
 
     let solution = items.insert_into(knapsacks).using(bounded_solvers::GeneralizedGreedy);

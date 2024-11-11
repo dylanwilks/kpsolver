@@ -22,7 +22,7 @@ where
 
     knapsacks! {
         knapsacks<u32, 2>:
-            [100, 70]
+            [100, 70];
     }
 
     items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
