@@ -1,4 +1,5 @@
 target/
+interface/
 Cargo.lock
 *.swp
 *.swo

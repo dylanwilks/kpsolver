@@ -187,6 +187,16 @@ where
     pub fn iter<'a>(&'a self) -> indexmap::map::Values<'a, (u64, [u64; S]), Item<T, S>> {
         self.items.values()
     }
+
+    pub fn to_generic<N>(self) -> Knapsack<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut knapsack = Knapsack::<N, S>::new(self.capacity.map(|x| N::from(x)));
+        for item in self {
+            knapsack.add(item.to_generic::<N>());
+        }
+
+        knapsack
+    }
 }
 
 impl<T, const S: usize> IntoIterator for Knapsack<T, S>
@@ -270,6 +280,16 @@ where
     pub fn iter_mut<'a>(&'a mut self) 
     -> std::slice::IterMut<'a, Knapsack<T, S>> {
         self.knapsacks.iter_mut()
+    }
+
+    pub fn to_generic<N>(self) -> ProblemKnapsacks<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut knapsacks = ProblemKnapsacks::<N, S>::new();
+        for knapsack in self {
+            knapsacks.add(knapsack.to_generic::<N>());
+        }
+
+        knapsacks
     }
 }
 
@@ -464,6 +484,16 @@ where
     pub fn iter<'a>(&'a self) -> std::slice::Iter<'a, Item<T, S>> {
         self.items.iter()
     }
+
+    pub fn to_generic<N>(self) -> KnapsackBinary<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut knapsack = KnapsackBinary::<N, S>::new(self.weights.map(|x| N::from(x)));
+        for item in self {
+            knapsack.add(item.to_generic::<N>());
+        }
+
+        knapsack
+    }
 }
 
 impl<T, const S: usize> IntoIterator for KnapsackBinary<T, S>
@@ -535,6 +565,16 @@ where
 
     pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, KnapsackBinary<T, S>> {
         self.knapsacks.iter_mut()
+    }
+
+    pub fn to_generic<N>(self) -> ProblemKnapsacksBinary<N, S>
+    where N: CompatibleProblemType + From<T>, {
+        let mut knapsacks = ProblemKnapsacksBinary::<N, S>::new();
+        for knapsack in self {
+            knapsacks.add(knapsack.to_generic::<N>());
+        }
+
+        knapsacks
     }
 }
 
