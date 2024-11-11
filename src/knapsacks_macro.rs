@@ -50,9 +50,9 @@ macro_rules! knapsacks_binary {
     )*
     ) => {
         let mut $knapsacks_name 
-        = ProblemKnapsacksBinary::<$knapsack_type, $length>::new();
+        = BinaryProblemKnapsacks::<$knapsack_type, $length>::new();
         $(
-            $knapsacks_name.add(KnapsackBinary::<$knapsack_type, $length>::
+            $knapsacks_name.add(BinaryKnapsack::<$knapsack_type, $length>::
                 new([$($capacity),*]));
         )*
     };

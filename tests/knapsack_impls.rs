@@ -1,7 +1,7 @@
 use kpsolver::{
-    Item, ItemUnbound, 
+    Item, UnboundedItem, 
     Knapsack,
-    unbound,
+    unbounded,
 };
 
 #[test]
@@ -67,11 +67,11 @@ fn add_mut() {
 }
 
 #[test]
-fn add_mut_unbound() {
-    let mut item = ItemUnbound::<u32, 1>::new(1.0, [1], unbound);
+fn add_mut_unbounded() {
+    let mut item = UnboundedItem::<u32, 1>::new(1.0, [1], unbounded);
     let mut knapsack = Knapsack::<u32, 1>::new([1]);
     knapsack.add_mut(&mut item, 1);
-    assert_eq!(item.quantity, unbound);
+    assert_eq!(item.quantity, unbounded);
 }
 
 #[test]

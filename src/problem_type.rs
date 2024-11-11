@@ -1,28 +1,28 @@
-use crate::unbound_struct::unbound;
+use crate::unbounded_struct::unbounded;
 use crate::compatible_problem_type_trait::{
-    CompatibleProblemType, UnboundCompatibility
+    CompatibleProblemType, UnboundedCompatibility
 };
 use crate::item::{
-    ItemUnbound,
-    ProblemItems, ProblemItemsBinary, ProblemItemsUnbound
+    UnboundedItem,
+    ProblemItems, BinaryProblemItems, UnboundedProblemItems
 };
 use crate::knapsack::{
     Knapsack,
-    ProblemKnapsacks, ProblemKnapsacksBinary
+    ProblemKnapsacks, BinaryProblemKnapsacks
 };
 
 pub struct BinaryProblem<T, const S: usize>
 where T: CompatibleProblemType,
 {
-    pub items: ProblemItemsBinary<T, S>,
-    pub knapsacks: ProblemKnapsacksBinary<T, S>,
+    pub items: BinaryProblemItems<T, S>,
+    pub knapsacks: BinaryProblemKnapsacks<T, S>,
 }
 
 pub struct BinaryProblemMut<'a, T, const S: usize>
 where T: CompatibleProblemType,
 {
-    pub items: &'a mut ProblemItemsBinary<T, S>,
-    pub knapsacks: ProblemKnapsacksBinary<T, S>,
+    pub items: &'a mut BinaryProblemItems<T, S>,
+    pub knapsacks: BinaryProblemKnapsacks<T, S>,
 }
 
 pub trait BinarySolver<T, const S: usize>: Clone + Copy
@@ -46,8 +46,8 @@ where T: CompatibleProblemType,
 impl<'a, T, const S: usize> BinaryProblemMut<'a, T, S>
 where T: CompatibleProblemType,
 {
-    pub fn using(self, solver: impl BinarySolver<T, S, Output = ProblemKnapsacksBinary<T, S>>) 
-    -> ProblemKnapsacksBinary<T, S> {
+    pub fn using(self, solver: impl BinarySolver<T, S, Output = BinaryProblemKnapsacks<T, S>>) 
+    -> BinaryProblemKnapsacks<T, S> {
         let solution = solver.solve(BinaryProblem::<T, S> {
             items: self.items.clone(),
             knapsacks: self.knapsacks,
@@ -70,7 +70,7 @@ where T: CompatibleProblemType,
 pub struct BoundedProblem<T, const S: usize, N = T>
 where 
     T: CompatibleProblemType,
-    N: UnboundCompatibility,
+    N: UnboundedCompatibility,
 {
     pub items: ProblemItems<T, S, N>,
     pub knapsacks: ProblemKnapsacks<T, S>,
@@ -79,7 +79,7 @@ where
 pub struct BoundedProblemMut<'a, T, const S: usize, N = T>
 where 
     T: CompatibleProblemType,
-    N: UnboundCompatibility,
+    N: UnboundedCompatibility,
 {
     pub items: &'a mut ProblemItems<T, S, N>,
     pub knapsacks: ProblemKnapsacks<T, S>,
@@ -161,8 +161,8 @@ where
     }
 }
 
-pub type UnboundedProblem<T, const S: usize> = BoundedProblem::<T, S, unbound>;
-pub type UnboundedProblemMut<'a, T, const S: usize> = BoundedProblemMut::<'a, T, S, unbound>;
+pub type UnboundedProblem<T, const S: usize> = BoundedProblem::<T, S, unbounded>;
+pub type UnboundedProblemMut<'a, T, const S: usize> = BoundedProblemMut::<'a, T, S, unbounded>;
 
 pub trait UnboundedSolver<T, const S: usize>: Clone + Copy
 where
@@ -206,16 +206,16 @@ where
     type Output = <N as UnboundedSolver<T, S>>::Output;
 
     fn solve(self, problem: BoundedProblem<T, S>) -> Self::Output {
-        let unbounded_problem = 
+        let unboundeded_problem = 
         UnboundedProblem::<T, S> {
             items: {
-                let mut problem_items = ProblemItemsUnbound::<T, S>::new();
+                let mut problem_items = UnboundedProblemItems::<T, S>::new();
                 for item in problem.items {
                     problem_items.add(
-                        ItemUnbound::<T, S> {
+                        UnboundedItem::<T, S> {
                             value: item.value,
                             weights: item.weights,
-                            quantity: unbound,
+                            quantity: unbounded,
                         }
                     );
                 }
@@ -235,6 +235,6 @@ where
             },
         };
 
-        <N as UnboundedSolver<T, S>>::solve(self, unbounded_problem)
+        <N as UnboundedSolver<T, S>>::solve(self, unboundeded_problem)
     }
 }

@@ -1,5 +1,5 @@
 use crate::item::Item;
-use crate::knapsack::ProblemKnapsacksBinary;
+use crate::knapsack::BinaryProblemKnapsacks;
 use crate::problem_type::{BinaryProblem, BinarySolver};
 use good_lp::{constraint, Solution, SolverModel, variables, variable, Variable, 
               Expression};
@@ -11,10 +11,10 @@ macro_rules! good_lp_wrapper {
 pub struct $solver_name;
 impl<const S: usize> BinarySolver<f64, S> for $solver_name
 {
-    type Output = ProblemKnapsacksBinary<f64, S>;
+    type Output = BinaryProblemKnapsacks<f64, S>;
 
     fn solve(self, problem: BinaryProblem<f64, S>)
-    -> ProblemKnapsacksBinary<f64, S> {
+    -> BinaryProblemKnapsacks<f64, S> {
         let items = problem.items;
         let mut knapsacks = problem.knapsacks;
 

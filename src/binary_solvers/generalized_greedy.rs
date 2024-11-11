@@ -1,5 +1,5 @@
 use crate::item::Item;
-use crate::knapsack::ProblemKnapsacksBinary;
+use crate::knapsack::BinaryProblemKnapsacks;
 use crate::problem_type::{BinaryProblem, BinarySolver};
 
 struct ItemInfo {
@@ -17,10 +17,10 @@ struct KnapsackInfo {
 #[derive(Clone, Copy)]
 pub struct GeneralizedGreedy;
 impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
-    type Output = ProblemKnapsacksBinary<f64, S>;
+    type Output = BinaryProblemKnapsacks<f64, S>;
 
     fn solve(self, problem: BinaryProblem<f64, S>) 
-    -> ProblemKnapsacksBinary<f64, S> {
+    -> BinaryProblemKnapsacks<f64, S> {
         let items = problem.items;
         let mut knapsacks = problem.knapsacks;
         let mut knapsack_order: Vec<KnapsackInfo> 

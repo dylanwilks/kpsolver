@@ -1,4 +1,4 @@
-use kpsolver::{ProblemKnapsacks, ProblemKnapsacksBinary};
+use kpsolver::{ProblemKnapsacks, BinaryProblemKnapsacks};
 use kpsolver::compatible_problem_type_trait::CompatibleProblemType;
 
 #[macro_use]
@@ -13,7 +13,7 @@ where T: CompatibleProblemType,
 {
     Bounded1Tuple(fn(S) -> ProblemKnapsacks<T, 1>),
     Bounded2Tuple(fn(S) -> ProblemKnapsacks<T, 2>),
-    Binary1Tuple(fn(S) -> ProblemKnapsacksBinary<T, 1>),
+    Binary1Tuple(fn(S) -> BinaryProblemKnapsacks<T, 1>),
 }
 
 macro_rules! selective_tests {

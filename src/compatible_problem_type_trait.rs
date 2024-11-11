@@ -22,7 +22,7 @@ AddAssign + SubAssign + MulAssign
     }
 }
 
-pub trait UnboundCompatibility: Default {
+pub trait UnboundedCompatibility: Default {
     // Provided methods
     fn null() -> Option<Self> 
     where Self: Sized,
@@ -30,12 +30,12 @@ pub trait UnboundCompatibility: Default {
         Some(Self::default())
     }
 
-    fn is_unbound() -> bool {
+    fn is_unbounded() -> bool {
         false
     }
 }
 
-impl<T> UnboundCompatibility for T
+impl<T> UnboundedCompatibility for T
 where
     T: CompatibleProblemType,
 {

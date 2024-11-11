@@ -1,5 +1,5 @@
 use crate::compatible_problem_type_trait::{
-    CompatibleProblemType, UnboundCompatibility
+    CompatibleProblemType, UnboundedCompatibility
 };
 use crate::item::Item;
 
@@ -70,7 +70,7 @@ where
 
     pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T)
     -> bool where
-        R: UnboundCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
+        R: UnboundedCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
     {
         if item.quantity < quantity {
             return false;
@@ -351,7 +351,7 @@ where
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct KnapsackBinary<T, const S: usize>
+pub struct BinaryKnapsack<T, const S: usize>
 where
     T: CompatibleProblemType,
 {
@@ -361,7 +361,7 @@ where
     pub capacity: [T; S],
 }
 
-impl<T, const S: usize> KnapsackBinary<T, S>
+impl<T, const S: usize> BinaryKnapsack<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -401,7 +401,7 @@ where
     
     pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T)
     -> bool where
-        R: UnboundCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
+        R: UnboundedCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
     {
         if item.quantity < quantity {
             return false;
@@ -485,9 +485,9 @@ where
         self.items.iter()
     }
 
-    pub fn to_generic<N>(self) -> KnapsackBinary<N, S>
+    pub fn to_generic<N>(self) -> BinaryKnapsack<N, S>
     where N: CompatibleProblemType + From<T>, {
-        let mut knapsack = KnapsackBinary::<N, S>::new(self.weights.map(|x| N::from(x)));
+        let mut knapsack = BinaryKnapsack::<N, S>::new(self.weights.map(|x| N::from(x)));
         for item in self {
             knapsack.add(item.to_generic::<N>());
         }
@@ -496,7 +496,7 @@ where
     }
 }
 
-impl<T, const S: usize> IntoIterator for KnapsackBinary<T, S>
+impl<T, const S: usize> IntoIterator for BinaryKnapsack<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -508,7 +508,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a KnapsackBinary<T, S>
+impl<'a, T, const S: usize> IntoIterator for &'a BinaryKnapsack<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -521,19 +521,19 @@ where
 }
 
 #[derive(Default, Clone)]
-pub struct ProblemKnapsacksBinary<T, const S: usize>
+pub struct BinaryProblemKnapsacks<T, const S: usize>
 where
     T: CompatibleProblemType,
 {
-    knapsacks: Vec<KnapsackBinary<T, S>>,
+    knapsacks: Vec<BinaryKnapsack<T, S>>,
 }
 
-impl<T, const S: usize> ProblemKnapsacksBinary<T, S>
+impl<T, const S: usize> BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
     pub fn new() -> Self {
-        ProblemKnapsacksBinary::<T, S> {
+        BinaryProblemKnapsacks::<T, S> {
             knapsacks: Vec::new(),
         }
     }
@@ -547,7 +547,7 @@ where
         value
     }
 
-    pub fn add(&mut self, knapsack: KnapsackBinary<T, S>) {
+    pub fn add(&mut self, knapsack: BinaryKnapsack<T, S>) {
         self.knapsacks.push(knapsack);
     }
 
@@ -555,21 +555,21 @@ where
         self.knapsacks.len()
     }
 
-    pub fn into_iter(self) -> std::vec::IntoIter<KnapsackBinary<T, S>> {
+    pub fn into_iter(self) -> std::vec::IntoIter<BinaryKnapsack<T, S>> {
         self.knapsacks.into_iter()
     }
 
-    pub fn iter<'a>(&'a self) -> std::slice::Iter<'a, KnapsackBinary<T, S>> {
+    pub fn iter<'a>(&'a self) -> std::slice::Iter<'a, BinaryKnapsack<T, S>> {
         self.knapsacks.iter()
     }
 
-    pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, KnapsackBinary<T, S>> {
+    pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, BinaryKnapsack<T, S>> {
         self.knapsacks.iter_mut()
     }
 
-    pub fn to_generic<N>(self) -> ProblemKnapsacksBinary<N, S>
+    pub fn to_generic<N>(self) -> BinaryProblemKnapsacks<N, S>
     where N: CompatibleProblemType + From<T>, {
-        let mut knapsacks = ProblemKnapsacksBinary::<N, S>::new();
+        let mut knapsacks = BinaryProblemKnapsacks::<N, S>::new();
         for knapsack in self {
             knapsacks.add(knapsack.to_generic::<N>());
         }
@@ -578,24 +578,24 @@ where
     }
 }
 
-impl<T, const S: usize> IntoIterator for ProblemKnapsacksBinary<T, S>
+impl<T, const S: usize> IntoIterator for BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
-    type Item = KnapsackBinary<T, S>;
-    type IntoIter = std::vec::IntoIter<KnapsackBinary<T, S>>;
+    type Item = BinaryKnapsack<T, S>;
+    type IntoIter = std::vec::IntoIter<BinaryKnapsack<T, S>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.knapsacks.into_iter()
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a ProblemKnapsacksBinary<T, S>
+impl<'a, T, const S: usize> IntoIterator for &'a BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
-    type Item = <std::slice::Iter<'a, KnapsackBinary<T, S>> as Iterator>::Item;
-    type IntoIter = std::slice::Iter<'a, KnapsackBinary<T, S>>;
+    type Item = <std::slice::Iter<'a, BinaryKnapsack<T, S>> as Iterator>::Item;
+    type IntoIter = std::slice::Iter<'a, BinaryKnapsack<T, S>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.knapsacks.as_slice().into_iter()
@@ -603,30 +603,30 @@ where
 }
 
 impl<'a, T, const S: usize> IntoIterator 
-for &'a mut ProblemKnapsacksBinary<T, S>
+for &'a mut BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
-    type Item = <std::slice::IterMut<'a, KnapsackBinary<T, S>> as Iterator>::Item;
-    type IntoIter = std::slice::IterMut<'a, KnapsackBinary<T, S>>;
+    type Item = <std::slice::IterMut<'a, BinaryKnapsack<T, S>> as Iterator>::Item;
+    type IntoIter = std::slice::IterMut<'a, BinaryKnapsack<T, S>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.knapsacks.as_mut_slice().into_iter()
     }
 }
 
-impl<T, const S: usize> std::ops::Index<usize> for ProblemKnapsacksBinary<T, S>
+impl<T, const S: usize> std::ops::Index<usize> for BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
-    type Output = KnapsackBinary<T, S>;
+    type Output = BinaryKnapsack<T, S>;
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.knapsacks[index]
     }
 }
 
-impl<T, const S: usize> std::ops::IndexMut<usize> for ProblemKnapsacksBinary<T, S>
+impl<T, const S: usize> std::ops::IndexMut<usize> for BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {

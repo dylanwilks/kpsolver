@@ -1,5 +1,5 @@
 use crate::item::Item;
-use crate::knapsack::ProblemKnapsacksBinary;
+use crate::knapsack::BinaryProblemKnapsacks;
 use crate::problem_type::{BinarySolver, BinaryProblem};
 use minilp::{Problem, OptimizationDirection, ComparisonOp};
 
@@ -12,10 +12,10 @@ struct ItemPos<const S: usize> {
 #[derive(Clone, Copy)]
 pub struct TheoreticalGreedy;
 impl<const S: usize> BinarySolver<f64, S> for TheoreticalGreedy {
-    type Output = ProblemKnapsacksBinary<f64, S>;
+    type Output = BinaryProblemKnapsacks<f64, S>;
 
     fn solve(self, mut problem: BinaryProblem<f64, S>) 
-    -> ProblemKnapsacksBinary<f64, S> {
+    -> BinaryProblemKnapsacks<f64, S> {
         let items = problem.items;
         let knapsack = &mut problem.knapsacks[0];
 

@@ -1,15 +1,15 @@
 use ndarray::{ArrayD, IxDyn};
 use crate::item::Item;
-use crate::knapsack::ProblemKnapsacksBinary;
+use crate::knapsack::BinaryProblemKnapsacks;
 use crate::problem_type::{BinaryProblem, BinarySolver};
 
 #[derive(Clone, Copy)]
 pub struct Dynamic;
 impl<const S: usize> BinarySolver<u32, S> for Dynamic {
-    type Output = ProblemKnapsacksBinary<u32, S>;
+    type Output = BinaryProblemKnapsacks<u32, S>;
 
     fn solve(self, mut problem: BinaryProblem<u32, S>) 
-    -> ProblemKnapsacksBinary<u32, S> {
+    -> BinaryProblemKnapsacks<u32, S> {
         //find and create the dimensions of the memo matrix
         let items = problem.items;
         let knapsack = &mut problem.knapsacks[0];
