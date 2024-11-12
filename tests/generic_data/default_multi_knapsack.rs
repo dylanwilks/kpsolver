@@ -43,6 +43,7 @@ where
     items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
 }
 
+#[allow(unused_macros)]
 macro_rules! default_multi_knapsack {
     ($type:ty, $solver:ty) => {
         [
@@ -55,6 +56,7 @@ macro_rules! default_multi_knapsack {
     }
 }
 
+#[allow(unused_macros)]
 macro_rules! default_multi_knapsack_binary {
     ($type:ty, $solver:ty) => {
         [

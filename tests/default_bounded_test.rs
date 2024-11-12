@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use kpsolver::{bounded_solvers, binary_solvers};
 use generic_data::Problems;
 
