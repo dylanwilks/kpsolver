@@ -7,7 +7,7 @@ use good_lp::{constraint, Solution, SolverModel, variables, variable, Variable,
 macro_rules! good_lp_wrapper {
     ( $( [$solver_name:ident, $solver:expr] ),* ) => {
         $(
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct $solver_name;
 impl<const S: usize> BinarySolver<f64, S> for $solver_name
 {

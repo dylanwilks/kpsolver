@@ -9,7 +9,7 @@ struct ItemPos<const S: usize> {
     pub dist: f64, //smallest distance from hyperplane
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct TheoreticalGreedy;
 impl<const S: usize> BoundedSolver<f64, S> for TheoreticalGreedy {
     type Output = ProblemKnapsacks<f64, S>;

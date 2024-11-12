@@ -4,7 +4,7 @@ use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedProblem, BoundedSolver};
 
 //algorithm implemented for types that can be cast into usize (indexing)
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Dynamic;
 impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
     type Output = ProblemKnapsacks<u32, S>;

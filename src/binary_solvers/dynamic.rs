@@ -3,7 +3,7 @@ use crate::item::Item;
 use crate::knapsack::BinaryProblemKnapsacks;
 use crate::problem_type::{BinaryProblem, BinarySolver};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Dynamic;
 impl<const S: usize> BinarySolver<u32, S> for Dynamic {
     type Output = BinaryProblemKnapsacks<u32, S>;

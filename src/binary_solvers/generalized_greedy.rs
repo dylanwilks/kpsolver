@@ -14,7 +14,7 @@ struct KnapsackInfo {
 }
 
 //algorithm implemented for types that can be cast into f64 (efficiency calculation)
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct GeneralizedGreedy;
 impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
     type Output = BinaryProblemKnapsacks<f64, S>;
