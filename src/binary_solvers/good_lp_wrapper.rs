@@ -25,7 +25,7 @@ impl<const S: usize> BinarySolver<f64, S> for $solver_name
         let mut decision_var: Vec<Vec<Variable>> = Vec::with_capacity(m);
         for _i in 0..m {
             let mut decision_var_i: Vec<Variable> = Vec::with_capacity(n);
-            for j in 0..n {
+            for _j in 0..n {
                 decision_var_i.push(variables.add(variable().binary()));
             }
 

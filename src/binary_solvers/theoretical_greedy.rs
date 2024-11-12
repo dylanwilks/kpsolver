@@ -37,7 +37,7 @@ impl<const S: usize> BinarySolver<f64, S> for TheoreticalGreedy {
         //set up dual problem
         let mut dual_problem = Problem::new(OptimizationDirection::Minimize);
         let mut variables: Vec<minilp::Variable> 
-            = Vec::with_capacity(total_items);
+            = Vec::with_capacity(items.len());
         for m in 0..S {
             variables.push(dual_problem.add_var(knapsack.capacity[m] -
                                                 knapsack.weights()[m],
@@ -106,13 +106,13 @@ impl<const S: usize> BinarySolver<f64, S> for TheoreticalGreedy {
 
         //now add objects to knapsack
         for item_pos in item_positions {
-            if(!knapsack.add(
+            if !knapsack.add(
                 Item::<f64, S> {
                     value: items[item_pos.j].value,
                     weights: items[item_pos.j].weights,
-                    quantity: 1;
+                    quantity: 1.
                 }
-            )) {
+            ) {
                 break;
             }
         }
