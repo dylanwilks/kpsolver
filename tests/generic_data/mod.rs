@@ -5,6 +5,8 @@ use kpsolver::compatible_problem_type_trait::CompatibleProblemType;
 pub mod default_simple;
 #[macro_use]
 pub mod default_multi_constraint;
+#[macro_use]
+pub mod default_multi_knapsack;
 
 #[allow(dead_code)]
 #[derive(PartialEq)]
@@ -14,6 +16,7 @@ where T: CompatibleProblemType,
     Bounded1Tuple(fn(S) -> ProblemKnapsacks<T, 1>),
     Bounded2Tuple(fn(S) -> ProblemKnapsacks<T, 2>),
     Binary1Tuple(fn(S) -> BinaryProblemKnapsacks<T, 1>),
+    Binary2Tuple(fn(S) -> BinaryProblemKnapsacks<T, 2>),
 }
 
 macro_rules! selective_tests {
@@ -40,19 +43,45 @@ macro_rules! selective_tests {
                 match (default_tuple.0, default_tuple.1) {
                     ($crate::generic_data::Problems::Bounded1Tuple(f), v) => {
                         let solution = f($solver);
-                        assert!($cmp(&solution.value(), &(v * $scale)));
+                        assert!($cmp(&solution.value(), &(v * $scale)),
+                        "ERROR::COMPARISON_FAILED;
+                        SOLVER_NAME: {:?}
+                        LHS_VALUE: {}
+                        RHS_VALUE: {}",
+                        $solver, solution.value(), v * $scale);
                     }
                     ($crate::generic_data::Problems::Bounded2Tuple(f), v) => {
                         let solution = f($solver);
-                        assert!($cmp(&solution.value(), &(v * $scale)));
+                        assert!($cmp(&solution.value(), &(v * $scale)),
+                        "ERROR::COMPARISON_FAILED;
+                        SOLVER_NAME: {:?}
+                        LHS_VALUE: {}
+                        RHS_VALUE: {}",
+                        $solver, solution.value(), v * $scale);
                     }
                     ($crate::generic_data::Problems::Binary1Tuple(f), v) => {
                         let solution = f($solver);
-                        assert!($cmp(&solution.value(), &(v * $scale)));
+                        assert!($cmp(&solution.value(), &(v * $scale)),
+                        "ERROR::COMPARISON_FAILED;
+                        SOLVER_NAME: {:?}
+                        LHS_VALUE: {}
+                        RHS_VALUE: {}",
+                        $solver, solution.value(), v * $scale);
+                    }
+                    ($crate::generic_data::Problems::Binary2Tuple(f), v) => {
+                        let solution = f($solver);
+                        assert!($cmp(&solution.value(), &(v * $scale)),
+                        "ERROR::COMPARISON_FAILED;
+                        SOLVER_NAME: {:?}
+                        LHS_VALUE: {}
+                        RHS_VALUE: {}",
+                        $solver, solution.value(), v * $scale);
                     }
                 }
             }
             )*
+
+            $($custom_call)*
         }
     };
 }
