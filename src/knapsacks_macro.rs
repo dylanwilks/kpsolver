@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! knapsacks {
-    ($type:ty, $length:expr) => {$crate::Item::ProblemKnapsacks::<$type, $length>::new()};
+    ($type:ty, $length:expr) => {$crate::knapsack::ProblemKnapsacks::<$type, $length>::new()};
 
     (
     $knapsacks_name:ident
@@ -41,7 +41,7 @@ macro_rules! knapsacks {
 
 #[macro_export]
 macro_rules! knapsacks_binary {
-    ($type:ty, $length:expr) => {$crate::Item::BinaryProblemItems::<$type, $length>::new()};
+    ($type:ty, $length:expr) => {$crate::knapsack::BinaryProblemKnapsacks::<$type, $length>::new()};
 
     (
     $knapsacks_name:ident
@@ -54,9 +54,9 @@ macro_rules! knapsacks_binary {
     )*
     ) => {
         let mut $knapsacks_name 
-        = $crate::BinaryProblemKnapsacks::<$knapsack_type, $length>::new();
+        = $crate::knapsack::BinaryProblemKnapsacks::<$knapsack_type, $length>::new();
         $(
-            $knapsacks_name.add($crate::BinaryKnapsack::<$knapsack_type, $length>::
+            $knapsacks_name.add($crate::knapsack::BinaryKnapsack::<$knapsack_type, $length>::
                 new([$($capacity),*]));
         )*
     };

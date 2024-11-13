@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! items {
-    ($type:ty, $length:expr) => {$crate::Item::ProblemItems::<$type, $length>::new()};
+    ($type:ty, $length:expr) => {$crate::item::ProblemItems::<$type, $length>::new()};
     ($type:ty, $length:expr, unbounded) => {
         $crate::Item::ProblemItems::<$type, $length, unbounded>::new()
     };
@@ -101,7 +101,7 @@ macro_rules! items {
 
 #[macro_export]
 macro_rules! items_unbounded {
-    ($type:ty, $length:expr) => {$crate::Item::UnboundedProblemItems::<$type, $length>::new()};
+    ($type:ty, $length:expr) => {$crate::item::UnboundedProblemItems::<$type, $length>::new()};
 
     (
     $items_name:ident 
@@ -126,7 +126,7 @@ macro_rules! items_unbounded {
 
 #[macro_export]
 macro_rules! items_binary {
-    ($type:ty, $length:expr) => {$crate::Item::BinaryProblemItems::<$type, $length>::new()};
+    ($type:ty, $length:expr) => {$crate::item::BinaryProblemItems::<$type, $length>::new()};
 
     (
     $items_name:ident 
