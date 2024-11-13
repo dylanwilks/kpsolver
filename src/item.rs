@@ -49,6 +49,17 @@ where
 }
 
 impl<T, const S: usize> Item<T, S>
+where T: CompatibleProblemType, {
+    pub fn binary(value: f64, weights: [T; S]) -> Self {
+        Self {
+            value: value,
+            weights: weights,
+            quantity: <T as CompatibleProblemType>::identity(),
+        }
+    }
+}
+
+impl<T, const S: usize> Item<T, S>
 where T: CompatibleProblemType,
 {
     pub fn to_generic<N>(self) -> Item<N, S> 
