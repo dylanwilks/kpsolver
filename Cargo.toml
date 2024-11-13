@@ -14,5 +14,6 @@ minilp = "0.2.2"
 ndarray = "0.15.6"
 good_lp = { version = "*", features = ["cplex-rs", "coin_cbc", "highs", "scip"], default-features = true }
 indexmap = "2.6.0"
+rand = "0.8.5"
 
 [dev-dependencies]
