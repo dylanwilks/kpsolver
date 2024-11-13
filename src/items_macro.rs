@@ -1,5 +1,10 @@
 #[macro_export]
 macro_rules! items {
+    ($type:ty, $length:expr) => {$crate::Item::ProblemItems::<$type, $length>::new()};
+    ($type:ty, $length:expr, unbounded) => {
+        $crate::Item::ProblemItems::<$type, $length, unbounded>::new()
+    };
+
     (
     $items_name:ident 
     <
@@ -14,14 +19,12 @@ macro_rules! items {
     ) => {
             let mut $items_name = $crate::item::
             ProblemItems::<$item_type, 
-                           $length, 
-                           $item_type
+                           $length
                            >::new();
             $(
                 $items_name.add($crate::item::
                 Item::<$item_type, 
-                       $length, 
-                       $item_type
+                       $length
                        > {
                     value: $val,
                     weights: [$($weights),*],
@@ -72,27 +75,27 @@ macro_rules! items {
                 
                 });
             )*
-        };
+    };
 
-        (
-        $items_name:ident 
-        <
-            $item_type:ty,
-            1,
-        >:
-        $(
-            $val:expr,
-            $weight:expr
-            $(, $quantity:expr)?;
-        )*
-        ) => {
-            items! {
-                $items_name<$item_type, 1>:
-                    $(
-                        $val, [$weight] $(, $quantity)?;
-                    )*
-            }
-        };
+    (
+    $items_name:ident 
+    <
+        $item_type:ty,
+        1,
+    >:
+    $(
+        $val:expr,
+        $weight:expr
+        $(, $quantity:expr)?;
+    )*
+    ) => {
+        items! {
+            $items_name<$item_type, 1>:
+                $(
+                    $val, [$weight] $(, $quantity)?;
+                )*
+        }
+    };
     (@items_quantity, $quantity:expr $(, $_default:expr)?) => {
         $quantity
     };
@@ -100,6 +103,8 @@ macro_rules! items {
 
 #[macro_export]
 macro_rules! items_unbounded {
+    ($type:ty, $length:expr) => {$crate::Item::UnboundedProblemItems::<$type, $length>::new()};
+
     (
     $items_name:ident 
     <
@@ -123,6 +128,8 @@ macro_rules! items_unbounded {
 
 #[macro_export]
 macro_rules! items_binary {
+    ($type:ty, $length:expr) => {$crate::Item::BinaryProblemItems::<$type, $length>::new()};
+
     (
     $items_name:ident 
     <

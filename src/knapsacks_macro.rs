@@ -1,5 +1,7 @@
 #[macro_export]
 macro_rules! knapsacks {
+    ($type:ty, $length:expr) => {$crate::Item::ProblemKnapsacks::<$type, $length>::new()};
+
     (
     $knapsacks_name:ident
     <
@@ -39,6 +41,8 @@ macro_rules! knapsacks {
 
 #[macro_export]
 macro_rules! knapsacks_binary {
+    ($type:ty, $length:expr) => {$crate::Item::BinaryProblemItems::<$type, $length>::new()};
+
     (
     $knapsacks_name:ident
     <
