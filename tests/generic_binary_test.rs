@@ -5,6 +5,10 @@ use generic_data::Problems;
 #[macro_use]
 mod generic_data;
 
+#[cfg(all(
+    feature = "cplex",
+    feature = "highs",
+))]
 selective_tests! {
     fn binary_dynamic_test(binary_solvers::Dynamic, <f64 as PartialEq>::eq, 1.0) {
         DEFAULT: {
@@ -75,6 +79,9 @@ selective_tests! {
     }
 }
 
+#[cfg(all(
+    feature = "cplex",
+))]
 selective_tests! {
     fn binary_generalized_greedy_test(binary_solvers::GeneralizedGreedy, <f64 as PartialOrd>::ge, 0.5) {
         DEFAULT: {
@@ -108,6 +115,9 @@ selective_tests! {
     }
 }
 
+#[cfg(all(
+    feature = "highs",
+))]
 selective_tests! {
     fn binary_theoretical_greedy_test(binary_solvers::TheoreticalGreedy, <f64 as PartialOrd>::ge, 0.5) {
         DEFAULT: {
@@ -159,6 +169,7 @@ selective_tests! {
     }
 }
 
+#[cfg(feature = "cbc")]
 selective_tests! {
     fn binary_cbc_test(binary_solvers::CBC, <f64 as PartialEq>::eq, 1.0) {
         DEFAULT: {
@@ -174,6 +185,7 @@ selective_tests! {
     }
 }
 
+#[cfg(feature = "highs")]
 selective_tests! {
     fn binary_highs_test(binary_solvers::HiGHS, <f64 as PartialEq>::eq, 1.0) {
         DEFAULT: {
@@ -186,6 +198,7 @@ selective_tests! {
     }
 }
 
+#[cfg(feature = "cplex")]
 selective_tests! {
     fn binary_cplex_test(binary_solvers::CPLEX, <f64 as PartialEq>::eq, 1.0) {
         DEFAULT: {

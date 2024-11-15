@@ -7,13 +7,18 @@ edition = "2021"
 name = "kpsolver"
 path = "src/lib.rs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+cbc = ["good_lp/coin_cbc"]
+highs = ["good_lp/highs"]
+cplex = ["good_lp/cplex-rs"]
 
 [dependencies]
 minilp = "0.2.2"
 ndarray = "0.15.6"
-good_lp = { version = "*", features = ["cplex-rs", "coin_cbc", "highs", "scip"], default-features = true }
+good_lp = { version = "*", optional = true, default-features = false }
 indexmap = "2.6.0"
-rand = "0.8.5"
 
 [dev-dependencies]
+rand = "0.8.5"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

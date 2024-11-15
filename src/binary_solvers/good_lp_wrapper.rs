@@ -5,7 +5,7 @@ use good_lp::{constraint, Solution, SolverModel, variables, variable, Variable,
               Expression};
 
 macro_rules! good_lp_wrapper {
-    ( $( [$solver_name:ident, $solver:expr] ),* ) => {
+    ( $( [$solver_name:ident, $solver:expr] ),* $(,)?) => {
         $(
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct $solver_name;
@@ -83,7 +83,20 @@ impl<const S: usize> BinarySolver<f64, S> for $solver_name
     }
 }
 
-good_lp_wrapper!([CBC, good_lp::coin_cbc],
-                 [HiGHS, good_lp::highs],
-                 [CPLEX, good_lp::solvers::cplex::cplex]
+#[cfg(feature = "cbc")]
+good_lp_wrapper!
+(
+    [CBC, good_lp::coin_cbc],
+);
+
+#[cfg(feature = "highs")]
+good_lp_wrapper!
+(
+    [HiGHS, good_lp::highs],
+);
+
+#[cfg(feature = "cplex")]
+good_lp_wrapper!
+(
+    [CPLEX, good_lp::solvers::cplex::cplex]
 );
