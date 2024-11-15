@@ -44,11 +44,11 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
 
         //iterate over each item before iterating over the capacity (cascadingly).
         //allocate vectors before loop
-        let mut index = vec![1_usize; dim.len()];
-        let mut prev_index = vec![1_usize; dim.len()];
+        let mut index = vec![0_usize; dim.len()];
+        let mut prev_index = vec![0_usize; dim.len()];
         let mut ref_index = vec![0_usize; dim.len()];
         loop {
-            prev_index[0] -= 1;
+            index[0] += 1;
             for item in items.iter() {
                 for _ in 0..item.quantity {
                     let mut excess_weight: bool = false;
@@ -92,9 +92,9 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
             //if index[i] == dim[i], 'increment' index
             for i in 0..S {
                 if index[i] == dim[i] {
-                    index[i] = 1;
+                    index[i] = 0;
                     index[i+1] += 1;
-                    prev_index[i] = 1;
+                    prev_index[i] = 0;
                     prev_index[i+1] += 1;
                 } else {
                     break;

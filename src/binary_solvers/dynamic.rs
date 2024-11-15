@@ -15,14 +15,13 @@ impl<const S: usize> BinarySolver<u32, S> for Dynamic {
         let knapsack = &mut problem.knapsacks[0];
 
         let mut dim: Vec<usize> = (0..=S).collect();
-        dim[0] += items.len();
-        dim[0] += 1;
+        dim[0] += items.len() + 1;
         let mut capacity = vec![0_usize; S];
         capacity.clone_from_slice(knapsack.capacity.map
                                   (|x| 
                                    usize::try_from(x)
                                    .unwrap())
-                                  .as_slice());
+                                   .as_slice());
         let weight = *knapsack.weights();
         for i in 0..S {
             if usize::try_from(weight[i]).unwrap() > capacity[i] {
@@ -40,11 +39,11 @@ impl<const S: usize> BinarySolver<u32, S> for Dynamic {
 
         //iterate over each item before iterating over the capacity (cascadingly).
         //allocate vectors before loop
-        let mut index = vec![1_usize; dim.len()];
-        let mut prev_index = vec![1_usize; dim.len()];
+        let mut index = vec![0_usize; dim.len()];
+        let mut prev_index = vec![0_usize; dim.len()];
         let mut ref_index = vec![0_usize; dim.len()];
         loop {
-            prev_index[0] -= 1;
+            index[0] += 1;
             for item in items.iter() {
                 let mut excess_weight: bool = false;
                 //find ref_index by decreasing corresponding elements of index with item weights
@@ -86,9 +85,9 @@ impl<const S: usize> BinarySolver<u32, S> for Dynamic {
             //if index[i] == dim[i], 'increment' index
             for i in 0..S {
                 if index[i] == dim[i] {
-                    index[i] = 1;
+                    index[i] = 0;
                     index[i+1] += 1;
-                    prev_index[i] = 1;
+                    prev_index[i] = 0;
                     prev_index[i+1] += 1;
                 } else {
                     break;
@@ -100,7 +99,7 @@ impl<const S: usize> BinarySolver<u32, S> for Dynamic {
 
         //now to backtrack the matrix
         let mut current_val = memo[IxDyn(&index)];
-        for (i, item) in items.iter().enumerate().rev() {
+        for item in items.iter().rev() {
             index[0] -= 1;
             if current_val != memo[IxDyn(&index)] {
                 for j in 1..=S {
@@ -109,8 +108,8 @@ impl<const S: usize> BinarySolver<u32, S> for Dynamic {
 
                 knapsack.add(
                     Item::<u32, S> {
-                        value: items[i].value,
-                        weights: items[i].weights,
+                        value: item.value,
+                        weights: item.weights,
                         quantity: 1,
                     }
                 );
