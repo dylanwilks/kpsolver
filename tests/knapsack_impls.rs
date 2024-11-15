@@ -1,8 +1,4 @@
-use kpsolver::{
-    Item, UnboundedItem, 
-    Knapsack,
-    unbounded,
-};
+use kpsolver::{unbounded, Item, Knapsack, UnboundedItem};
 
 #[test]
 fn add_usize_1() {
@@ -13,7 +9,7 @@ fn add_usize_1() {
     assert!(knapsack.add(item1));
     assert!(!knapsack.add(item2));
     assert!(!knapsack.add(item3));
-    assert_eq!(knapsack.get_item((1.0, [1, 1])).unwrap().quantity, 1); 
+    assert_eq!(knapsack.get_item((1.0, [1, 1])).unwrap().quantity, 1);
     assert_eq!(knapsack.get_item((2.0, [1, 1])), None);
     assert_eq!(knapsack.value(), 1.0);
     assert_eq!(knapsack.weights(), &[1, 1]);
@@ -108,12 +104,18 @@ fn take_item_f64_some() {
 #[test]
 fn take_item_f64_none_1() {
     let mut knapsack = Knapsack::<f64, 2>::new([1.0, 1.0]);
-    assert_eq!(knapsack.take(Item::<f64, 2>::new(1.0, [1.0, 1.0], 1.0)), None);
+    assert_eq!(
+        knapsack.take(Item::<f64, 2>::new(1.0, [1.0, 1.0], 1.0)),
+        None
+    );
 }
 
 #[test]
 fn take_item_f64_none_2() {
     let mut knapsack = Knapsack::<f64, 2>::new([1.0, 1.0]);
     knapsack.add(Item::<f64, 2>::new(1.0, [1.0, 1.0], 1.0));
-    assert_eq!(knapsack.take(Item::<f64, 2>::new(1.0, [1.0, 1.0], 2.0)), None);
+    assert_eq!(
+        knapsack.take(Item::<f64, 2>::new(1.0, [1.0, 1.0], 2.0)),
+        None
+    );
 }

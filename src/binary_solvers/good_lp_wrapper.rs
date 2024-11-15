@@ -1,8 +1,7 @@
 use crate::item::Item;
 use crate::knapsack::BinaryProblemKnapsacks;
 use crate::problem_type::{BinaryProblem, BinarySolver};
-use good_lp::{constraint, Solution, SolverModel, variables, variable, Variable, 
-              Expression};
+use good_lp::{constraint, variable, variables, Expression, Solution, SolverModel, Variable};
 
 macro_rules! good_lp_wrapper {
     ( $( [$solver_name:ident, $solver:expr] ),* $(,)?) => {
@@ -84,19 +83,10 @@ impl<const S: usize> BinarySolver<f64, S> for $solver_name
 }
 
 #[cfg(feature = "cbc")]
-good_lp_wrapper!
-(
-    [CBC, good_lp::coin_cbc],
-);
+good_lp_wrapper!([CBC, good_lp::coin_cbc],);
 
 #[cfg(feature = "highs")]
-good_lp_wrapper!
-(
-    [HiGHS, good_lp::highs],
-);
+good_lp_wrapper!([HiGHS, good_lp::highs],);
 
 #[cfg(feature = "cplex")]
-good_lp_wrapper!
-(
-    [CPLEX, good_lp::solvers::cplex::cplex]
-);
+good_lp_wrapper!([CPLEX, good_lp::solvers::cplex::cplex]);

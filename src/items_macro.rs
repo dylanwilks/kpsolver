@@ -6,7 +6,7 @@ macro_rules! items {
     };
 
     (
-    $items_name:ident 
+    $items_name:ident
     <
         $item_type:ty,
         $length:literal
@@ -18,31 +18,31 @@ macro_rules! items {
     )*
     ) => {
             let mut $items_name = $crate::item::
-            ProblemItems::<$item_type, 
+            ProblemItems::<$item_type,
                            $length
                            >::new();
             $(
                 $items_name.add($crate::item::
-                Item::<$item_type, 
+                Item::<$item_type,
                        $length
                        > {
                     value: $val,
                     weights: [$($weights),*],
                     quantity: $crate::items!(
-                                    @items_quantity, 
-                                    $($quantity,)?  
+                                    @items_quantity,
+                                    $($quantity,)?
                                     <$item_type as $crate::
                                           compatible_problem_type_trait::
                                           CompatibleProblemType
                                      >::identity()
                               ),
-                
+
                 });
             )*
         };
 
     (
-    $items_name:ident 
+    $items_name:ident
     <
         $item_type:ty,
         $length:literal,
@@ -55,28 +55,28 @@ macro_rules! items {
     )*
     ) => {
             let mut $items_name = $crate::item::
-            UnboundedProblemItems::<$item_type, 
-                                    $length, 
+            UnboundedProblemItems::<$item_type,
+                                    $length,
                                     >::new();
             $(
                 $items_name.add($crate::item::
-                UnboundedItem::<$item_type, 
+                UnboundedItem::<$item_type,
                                 $length,
                                 > {
                     value: $val,
                     weights: [$($weights),*],
                     quantity: $crate::items!(
-                                    @items_quantity, 
-                                    $($quantity,)?  
+                                    @items_quantity,
+                                    $($quantity,)?
                                     unbounded
                               ),
-                
+
                 });
             )*
     };
 
     (
-    $items_name:ident 
+    $items_name:ident
     <
         $item_type:ty,
         1,
@@ -104,7 +104,7 @@ macro_rules! items_unbounded {
     ($type:ty, $length:expr) => {$crate::item::UnboundedProblemItems::<$type, $length>::new()};
 
     (
-    $items_name:ident 
+    $items_name:ident
     <
         $item_type:ty,
         $length:literal,
@@ -129,7 +129,7 @@ macro_rules! items_binary {
     ($type:ty, $length:expr) => {$crate::item::BinaryProblemItems::<$type, $length>::new()};
 
     (
-    $items_name:ident 
+    $items_name:ident
     <
         $item_type:ty,
         $length:literal
@@ -141,31 +141,31 @@ macro_rules! items_binary {
     )*
     ) => {
             let mut $items_name = $crate::item::
-            BinaryProblemItems::<$item_type, 
+            BinaryProblemItems::<$item_type,
                                  $length
                                  >::new();
             $(
                 $items_name.add($crate::item::
-                Item::<$item_type, 
+                Item::<$item_type,
                        $length
                        > {
                     value: $val,
                     weights: [$($weights),*],
                     quantity: $crate::items_binary!(
-                                    @items_quantity, 
-                                    $($quantity,)?  
+                                    @items_quantity,
+                                    $($quantity,)?
                                     <$item_type as $crate::
                                           compatible_problem_type_trait::
                                           CompatibleProblemType
                                      >::identity()
                               ),
-                
+
                 });
             )*
         };
 
     (
-    $items_name:ident 
+    $items_name:ident
     <
         $item_type:ty,
         1
@@ -187,4 +187,3 @@ macro_rules! items_binary {
         $quantity
     };
 }
-

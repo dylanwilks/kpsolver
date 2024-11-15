@@ -1,8 +1,7 @@
 use crate::item::Item;
 use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedProblem, BoundedSolver};
-use good_lp::{constraint, Solution, SolverModel, variables, variable, Variable, 
-              Expression};
+use good_lp::{constraint, variable, variables, Expression, Solution, SolverModel, Variable};
 
 macro_rules! good_lp_wrapper {
     ( $( [$solver_name:ident, $solver:expr] ),* ) => {
@@ -83,7 +82,8 @@ impl<const S: usize> BoundedSolver<f64, S> for $solver_name
     }
 }
 
-good_lp_wrapper!([CBC, good_lp::coin_cbc],
-                 [HiGHS, good_lp::highs],
-                 [CPLEX, good_lp::solvers::cplex::cplex]
+good_lp_wrapper!(
+    [CBC, good_lp::coin_cbc],
+    [HiGHS, good_lp::highs],
+    [CPLEX, good_lp::solvers::cplex::cplex]
 );

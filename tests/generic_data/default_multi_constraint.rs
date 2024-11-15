@@ -1,13 +1,8 @@
-use kpsolver::{
-    items, items_binary,
-    knapsacks, knapsacks_binary,
-    BoundedSolver, BinarySolver,
-};
 use kpsolver::compatible_problem_type_trait::CompatibleProblemType;
+use kpsolver::{items, items_binary, knapsacks, knapsacks_binary, BinarySolver, BoundedSolver};
 
 #[allow(dead_code)]
-pub fn random_sample_1<T, S>(solver: S) //OPTIMAL: 100.0
--> <S as BoundedSolver<T, 2>>::Output
+pub fn random_sample_1<T, S>(solver: S) -> <S as BoundedSolver<T, 2>>::Output
 where
     T: CompatibleProblemType + From<u32>,
     S: BoundedSolver<T, 2>,
@@ -25,12 +20,14 @@ where
             [100, 70];
     }
 
-    items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
+    items
+        .to_generic::<T>()
+        .insert_into(knapsacks.to_generic::<T>())
+        .using(solver)
 }
 
 #[allow(dead_code)]
-pub fn random_sample_2<T, S>(solver: S) //OPTIMAL: 302.0
--> <S as BinarySolver<T, 2>>::Output
+pub fn random_sample_2<T, S>(solver: S) -> <S as BinarySolver<T, 2>>::Output
 where
     T: CompatibleProblemType + From<u32>,
     S: BinarySolver<T, 2>,
@@ -55,7 +52,10 @@ where
             [269, 175];
     }
 
-    items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
+    items
+        .to_generic::<T>()
+        .insert_into(knapsacks.to_generic::<T>())
+        .using(solver)
 }
 
 #[allow(unused_macros)]
@@ -79,12 +79,11 @@ macro_rules! default_multi_constraint {
 #[allow(unused_macros)]
 macro_rules! default_multi_constraint_binary {
     ($type:ty, $solver:ty) => {
-        [
-            (
-                $crate::generic_data::Problems::<$type, $solver>::Binary2Tuple(
-                $crate::generic_data::default_multi_constraint::random_sample_2::<$type, $solver>),
-                280.0
+        [(
+            $crate::generic_data::Problems::<$type, $solver>::Binary2Tuple(
+                $crate::generic_data::default_multi_constraint::random_sample_2::<$type, $solver>,
             ),
-        ]
-    }
+            280.0,
+        )]
+    };
 }

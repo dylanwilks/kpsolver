@@ -12,7 +12,7 @@ macro_rules! knapsacks {
         [$($capacity:expr),+];
     )*
     ) => {
-        let mut $knapsacks_name 
+        let mut $knapsacks_name
         = $crate::knapsack::ProblemKnapsacks::<$knapsack_type, $length>::new();
         $(
             $knapsacks_name.add($crate::knapsack::Knapsack::<$knapsack_type, $length>::
@@ -53,7 +53,7 @@ macro_rules! knapsacks_binary {
         [$($capacity:expr),+];
     )*
     ) => {
-        let mut $knapsacks_name 
+        let mut $knapsacks_name
         = $crate::knapsack::BinaryProblemKnapsacks::<$knapsack_type, $length>::new();
         $(
             $knapsacks_name.add($crate::knapsack::BinaryKnapsack::<$knapsack_type, $length>::

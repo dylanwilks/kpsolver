@@ -1,5 +1,5 @@
-use kpsolver::{ProblemKnapsacks, BinaryProblemKnapsacks};
 use kpsolver::compatible_problem_type_trait::CompatibleProblemType;
+use kpsolver::{BinaryProblemKnapsacks, ProblemKnapsacks};
 
 #[macro_use]
 pub mod default_simple;
@@ -11,8 +11,9 @@ pub mod random_test;
 
 #[allow(dead_code)]
 #[derive(PartialEq)]
-pub(crate) enum Problems<T, S> 
-where T: CompatibleProblemType,
+pub(crate) enum Problems<T, S>
+where
+    T: CompatibleProblemType,
 {
     Bounded1Tuple(fn(S) -> ProblemKnapsacks<T, 1>),
     Bounded2Tuple(fn(S) -> ProblemKnapsacks<T, 2>),

@@ -1,6 +1,4 @@
-use crate::compatible_problem_type_trait::{
-    CompatibleProblemType, UnboundedCompatibility
-};
+use crate::compatible_problem_type_trait::{CompatibleProblemType, UnboundedCompatibility};
 use crate::item::Item;
 
 use indexmap::IndexMap;
@@ -14,10 +12,10 @@ where
     value: f64,
     items: IndexMap<(u64, [u64; S]), Item<T, S>>,
     weights: [T; S],
-    pub capacity: [T; S], 
+    pub capacity: [T; S],
 }
 
-impl<T, const S: usize> Knapsack<T, S> 
+impl<T, const S: usize> Knapsack<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -39,17 +37,18 @@ where
     }
 
     pub fn get_item(&self, key: (f64, [T; S])) -> Option<&Item<T, S>> {
-        self.items.get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn get_index_of(&self, key: (f64, [T; S])) -> Option<usize> {
-        self.items.get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn add(&mut self, item: Item<T, S>) -> bool {
         for r in 0..S {
-            if item.weights[r] * item.quantity + self.weights[r] > 
-            self.capacity[r] {
+            if item.weights[r] * item.quantity + self.weights[r] > self.capacity[r] {
                 return false;
             }
         }
@@ -68,8 +67,8 @@ where
         return true;
     }
 
-    pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T)
-    -> bool where
+    pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T) -> bool
+    where
         R: UnboundedCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
     {
         if item.quantity < quantity {
@@ -77,8 +76,7 @@ where
         }
 
         for r in 0..S {
-            if item.weights[r] * quantity + self.weights[r] > 
-            self.capacity[r] {
+            if item.weights[r] * quantity + self.weights[r] > self.capacity[r] {
                 return false;
             }
         }
@@ -93,12 +91,12 @@ where
             stored_item.quantity += quantity;
         } else {
             self.items.insert(
-                item.to_key(), 
+                item.to_key(),
                 Item::<T, S> {
                     value: item.value,
                     weights: item.weights,
                     quantity: quantity,
-                }
+                },
             );
         }
 
@@ -107,17 +105,14 @@ where
 
     pub fn take(&mut self, item: Item<T, S>) -> Option<Item<T, S>> {
         if let Some(stored_item) = self.items.get_mut(&item.to_key()) {
-            match stored_item
-                  .quantity
-                  .partial_cmp(&item.quantity)
-                  .unwrap() {
+            match stored_item.quantity.partial_cmp(&item.quantity).unwrap() {
                 Ordering::Less => {
                     return None;
-                },
+                }
 
                 Ordering::Greater | Ordering::Equal => {
                     stored_item.quantity -= item.quantity;
-                },
+                }
             }
 
             self.value -= item.value * item.quantity.into();
@@ -133,17 +128,12 @@ where
 
     pub fn take_at_index(&mut self, index: usize, quantity: T) -> Option<Item<T, S>> {
         if let Some((_, stored_item)) = self.items.get_index_mut(index) {
-            match stored_item
-                  .quantity
-                  .partial_cmp(&quantity)
-                  .unwrap() {
+            match stored_item.quantity.partial_cmp(&quantity).unwrap() {
                 Ordering::Less => {
                     return None;
-                },
+                }
 
-                Ordering::Greater | Ordering::Equal => {
-                    stored_item.quantity -= quantity
-                },
+                Ordering::Greater | Ordering::Equal => stored_item.quantity -= quantity,
             }
 
             self.value -= stored_item.value * quantity.into();
@@ -158,7 +148,8 @@ where
     }
 
     pub fn remove_item(&mut self, key: (f64, [T; S])) -> Option<Item<T, S>> {
-        self.items.shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn remove_at_index(&mut self, index: usize) -> Option<Item<T, S>> {
@@ -189,7 +180,9 @@ where
     }
 
     pub fn to_generic<N>(self) -> Knapsack<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut knapsack = Knapsack::<N, S>::new(self.capacity.map(|x| N::from(x)));
         for item in self {
             knapsack.add(item.to_generic::<N>());
@@ -211,7 +204,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a Knapsack<T, S> 
+impl<'a, T, const S: usize> IntoIterator for &'a Knapsack<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -288,13 +281,14 @@ where
         self.knapsacks.iter()
     }
 
-    pub fn iter_mut<'a>(&'a mut self) 
-    -> std::slice::IterMut<'a, Knapsack<T, S>> {
+    pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, Knapsack<T, S>> {
         self.knapsacks.iter_mut()
     }
 
     pub fn to_generic<N>(self) -> ProblemKnapsacks<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut knapsacks = ProblemKnapsacks::<N, S>::new();
         for knapsack in self {
             knapsacks.add(knapsack.to_generic::<N>());
@@ -328,8 +322,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator 
-for &'a mut ProblemKnapsacks<T, S>
+impl<'a, T, const S: usize> IntoIterator for &'a mut ProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {
@@ -395,8 +388,7 @@ where
 
     pub fn add(&mut self, item: Item<T, S>) -> bool {
         for r in 0..S {
-            if item.weights[r] * item.quantity + self.weights[r] > 
-            self.capacity[r] {
+            if item.weights[r] * item.quantity + self.weights[r] > self.capacity[r] {
                 return false;
             }
         }
@@ -409,9 +401,9 @@ where
         self.items.push(item);
         return true;
     }
-    
-    pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T)
-    -> bool where
+
+    pub fn add_mut<R>(&mut self, item: &mut Item<T, S, R>, quantity: T) -> bool
+    where
         R: UnboundedCompatibility + PartialOrd<T> + std::ops::SubAssign<T>,
     {
         if item.quantity < quantity {
@@ -419,8 +411,7 @@ where
         }
 
         for r in 0..S {
-            if item.weights[r] * quantity + self.weights[r] > 
-            self.capacity[r] {
+            if item.weights[r] * quantity + self.weights[r] > self.capacity[r] {
                 return false;
             }
         }
@@ -431,30 +422,25 @@ where
             self.weights[r] += item.weights[r] * quantity;
         }
 
-        self.items.push(
-            Item::<T, S> {
-                value: item.value,
-                weights: item.weights,
-                quantity: quantity,
-            }
-        );
+        self.items.push(Item::<T, S> {
+            value: item.value,
+            weights: item.weights,
+            quantity: quantity,
+        });
 
         return true;
     }
 
     pub fn take_at_index(&mut self, index: usize, quantity: T) -> Option<Item<T, S>> {
         if let Some(stored_item) = self.items.get_mut(index) {
-            match stored_item
-                  .quantity
-                  .partial_cmp(&quantity)
-                  .unwrap() {
+            match stored_item.quantity.partial_cmp(&quantity).unwrap() {
                 Ordering::Less => {
                     return None;
-                },
+                }
 
                 Ordering::Greater | Ordering::Equal => {
                     stored_item.quantity -= quantity;
-                },
+                }
             }
 
             self.value -= stored_item.value * quantity.into();
@@ -497,7 +483,9 @@ where
     }
 
     pub fn to_generic<N>(self) -> BinaryKnapsack<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut knapsack = BinaryKnapsack::<N, S>::new(self.capacity.map(|x| N::from(x)));
         for item in self {
             knapsack.add(item.to_generic::<N>());
@@ -590,7 +578,9 @@ where
     }
 
     pub fn to_generic<N>(self) -> BinaryProblemKnapsacks<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut knapsacks = BinaryProblemKnapsacks::<N, S>::new();
         for knapsack in self {
             knapsacks.add(knapsack.to_generic::<N>());
@@ -624,8 +614,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator 
-for &'a mut BinaryProblemKnapsacks<T, S>
+impl<'a, T, const S: usize> IntoIterator for &'a mut BinaryProblemKnapsacks<T, S>
 where
     T: CompatibleProblemType,
 {

@@ -1,27 +1,21 @@
 pub use item::{
-    Item, BinaryItem, UnboundedItem, 
-    ProblemItems, BinaryProblemItems, UnboundedProblemItems
+    BinaryItem, BinaryProblemItems, Item, ProblemItems, UnboundedItem, UnboundedProblemItems,
 };
-pub use knapsack::{
-    Knapsack, BinaryKnapsack,
-    ProblemKnapsacks, BinaryProblemKnapsacks
-};
+pub use knapsack::{BinaryKnapsack, BinaryProblemKnapsacks, Knapsack, ProblemKnapsacks};
 
 pub use problem_type::{
-    BoundedProblem, BoundedSolver, 
-    BinaryProblem, BinarySolver,
-    UnboundedProblem, UnboundedSolver
+    BinaryProblem, BinarySolver, BoundedProblem, BoundedSolver, UnboundedProblem, UnboundedSolver,
 };
 pub use unbounded_struct::unbounded;
- 
+
 pub mod compatible_problem_type_trait;
 #[macro_use]
 pub mod item;
+mod items_macro;
 pub mod knapsack;
+mod knapsacks_macro;
 pub mod problem_type;
 pub mod unbounded_struct;
-mod items_macro;
-mod knapsacks_macro;
 
 pub mod binary_solvers;
 pub mod bounded_solvers;

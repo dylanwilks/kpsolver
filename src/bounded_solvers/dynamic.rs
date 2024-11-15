@@ -1,7 +1,7 @@
-use ndarray::{ArrayD, IxDyn};
 use crate::item::Item;
 use crate::knapsack::ProblemKnapsacks;
 use crate::problem_type::{BoundedProblem, BoundedSolver};
+use ndarray::{ArrayD, IxDyn};
 
 //algorithm implemented for types that can be cast into usize (indexing)
 #[derive(Clone, Copy, PartialEq, Debug)]
@@ -9,8 +9,7 @@ pub struct Dynamic;
 impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
     type Output = ProblemKnapsacks<u32, S>;
 
-    fn solve(self, mut problem: BoundedProblem<u32, S>) 
-    -> ProblemKnapsacks<u32, S> {
+    fn solve(self, mut problem: BoundedProblem<u32, S>) -> ProblemKnapsacks<u32, S> {
         //find and create the dimensions of the memo matrix
         let items = problem.items;
         let knapsack = &mut problem.knapsacks[0];
@@ -22,11 +21,12 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
 
         dim[0] += 1;
         let mut capacity = vec![0_usize; S];
-        capacity.clone_from_slice(knapsack.capacity.map
-                                  (|x| 
-                                   usize::try_from(x)
-                                   .unwrap())
-                                  .as_slice());
+        capacity.clone_from_slice(
+            knapsack
+                .capacity
+                .map(|x| usize::try_from(x).unwrap())
+                .as_slice(),
+        );
         let weight = *knapsack.weights();
         for i in 0..S {
             if usize::try_from(weight[i]).unwrap() > capacity[i] {
@@ -37,7 +37,7 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
         }
 
         for (i, cap) in capacity.iter().enumerate() {
-            dim[i+1] = *cap + 1;
+            dim[i + 1] = *cap + 1;
         }
 
         let mut memo = ArrayD::<f64>::zeros(IxDyn(&dim));
@@ -54,16 +54,14 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
                     let mut excess_weight: bool = false;
                     //find ref_index by decreasing corresponding elements of index with item weights
                     for i in 1..=S {
-                        if usize::try_from(item.weights[i-1]).unwrap() 
-                        > index[i] {
+                        if usize::try_from(item.weights[i - 1]).unwrap() > index[i] {
                             excess_weight = true;
                             break;
                         } else {
-                            ref_index[i] = index[i] - 
-                                item.weights[i-1] as usize;
+                            ref_index[i] = index[i] - item.weights[i - 1] as usize;
                         }
                     }
-                    
+
                     //excess_weight similar to w_1 > c_1 V w_2 > c_2 V ... lazily evaluated
                     if excess_weight {
                         memo[IxDyn(&index)] = memo[IxDyn(&prev_index)];
@@ -93,9 +91,9 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
             for i in 0..S {
                 if index[i] == dim[i] {
                     index[i] = 0;
-                    index[i+1] += 1;
+                    index[i + 1] += 1;
                     prev_index[i] = 0;
-                    prev_index[i+1] += 1;
+                    prev_index[i + 1] += 1;
                 } else {
                     break;
                 }
@@ -123,13 +121,11 @@ impl<const S: usize> BoundedSolver<u32, S> for Dynamic {
         }
 
         for (i, quantity) in item_quantity.iter().enumerate() {
-            knapsack.add(
-                Item::<u32, S> {
-                    value: items[i].value,
-                    weights: items[i].weights,
-                    quantity: u32::try_from(*quantity).unwrap(),
-                }
-            );
+            knapsack.add(Item::<u32, S> {
+                value: items[i].value,
+                weights: items[i].weights,
+                quantity: u32::try_from(*quantity).unwrap(),
+            });
         }
 
         problem.knapsacks

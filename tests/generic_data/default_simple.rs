@@ -1,13 +1,8 @@
-use kpsolver::{
-    items_binary,
-    knapsacks_binary,
-    BinarySolver,
-};
 use kpsolver::compatible_problem_type_trait::CompatibleProblemType;
+use kpsolver::{items_binary, knapsacks_binary, BinarySolver};
 
 #[allow(dead_code)]
-pub fn random_sample_1<T, S>(solver: S) //OPTIMAL: 302.0
--> <S as BinarySolver<T, 1>>::Output
+pub fn random_sample_1<T, S>(solver: S) -> <S as BinarySolver<T, 1>>::Output
 where
     T: CompatibleProblemType + From<u32>,
     S: BinarySolver<T, 1>,
@@ -32,12 +27,14 @@ where
             295;
     }
 
-    items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
+    items
+        .to_generic::<T>()
+        .insert_into(knapsacks.to_generic::<T>())
+        .using(solver)
 }
 
 #[allow(dead_code)]
-pub fn random_sample_2<T, S>(solver: S) //OPTIMAL: 302.0
--> <S as BinarySolver<T, 1>>::Output
+pub fn random_sample_2<T, S>(solver: S) -> <S as BinarySolver<T, 1>>::Output
 where
     T: CompatibleProblemType + From<u32>,
     S: BinarySolver<T, 1>,
@@ -55,7 +52,10 @@ where
             2;
     }
 
-    items.to_generic::<T>().insert_into(knapsacks.to_generic::<T>()).using(solver)
+    items
+        .to_generic::<T>()
+        .insert_into(knapsacks.to_generic::<T>())
+        .using(solver)
 }
 
 #[allow(unused_macros)]
@@ -64,16 +64,18 @@ macro_rules! default_simple {
         [
             (
                 $crate::generic_data::Problems::<$type, $solver>::Bounded1Tuple(
-                $crate::generic_data::default_simple::random_sample_1::<$type, $solver>),
-                302.0
+                    $crate::generic_data::default_simple::random_sample_1::<$type, $solver>,
+                ),
+                302.0,
             ),
             (
                 $crate::generic_data::Problems::<$type, $solver>::Bounded1Tuple(
-                $crate::generic_data::default_simple::random_sample_2::<$type, $solver>),
-                3.0
+                    $crate::generic_data::default_simple::random_sample_2::<$type, $solver>,
+                ),
+                3.0,
             ),
         ]
-    }
+    };
 }
 
 #[allow(unused_macros)]
@@ -82,14 +84,16 @@ macro_rules! default_simple_binary {
         [
             (
                 $crate::generic_data::Problems::<$type, $solver>::Binary1Tuple(
-                $crate::generic_data::default_simple::random_sample_1::<$type, $solver>),
-                302.0
+                    $crate::generic_data::default_simple::random_sample_1::<$type, $solver>,
+                ),
+                302.0,
             ),
             (
                 $crate::generic_data::Problems::<$type, $solver>::Binary1Tuple(
-                $crate::generic_data::default_simple::random_sample_2::<$type, $solver>),
-                3.0
+                    $crate::generic_data::default_simple::random_sample_2::<$type, $solver>,
+                ),
+                3.0,
             ),
         ]
-    }
+    };
 }

@@ -4,13 +4,13 @@ use crate::problem_type::{BinaryProblem, BinarySolver};
 
 struct ItemInfo {
     pub j: usize, //index
-    pub e: f64, //efficiency
-    pub x: bool, //decision variable
+    pub e: f64,   //efficiency
+    pub x: bool,  //decision variable
 }
 
 struct KnapsackInfo {
     pub j: usize, //index
-    pub s: f64, //score
+    pub s: f64,   //score
 }
 
 //algorithm implemented for types that can be cast into f64 (efficiency calculation)
@@ -19,12 +19,10 @@ pub struct GeneralizedGreedy;
 impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
     type Output = BinaryProblemKnapsacks<f64, S>;
 
-    fn solve(self, problem: BinaryProblem<f64, S>) 
-    -> BinaryProblemKnapsacks<f64, S> {
+    fn solve(self, problem: BinaryProblem<f64, S>) -> BinaryProblemKnapsacks<f64, S> {
         let items = problem.items;
         let mut knapsacks = problem.knapsacks;
-        let mut knapsack_order: Vec<KnapsackInfo> 
-            = Vec::with_capacity(knapsacks.len());
+        let mut knapsack_order: Vec<KnapsackInfo> = Vec::with_capacity(knapsacks.len());
         let mut capacity_d_sum: [f64; S] = [0.0; S];
         let mut weight_d_sum: [f64; S] = [0.0; S];
         let mut d_rating: [f64; S] = [1.0; S];
@@ -36,10 +34,9 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
             for item in items.iter() {
                 weight_d_sum[r] += item.weights[r];
             }
-            
+
             for knapsack in knapsacks.iter() {
-                capacity_d_sum[r] += knapsack.capacity[r] 
-                                   - knapsack.weights()[r];
+                capacity_d_sum[r] += knapsack.capacity[r] - knapsack.weights()[r];
             }
 
             d_diff[r] = weight_d_sum[r] - capacity_d_sum[r];
@@ -53,40 +50,35 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
         //items with same value and weights will have the same rating.
         let mut items_toyoda: Vec<ItemInfo> = Vec::with_capacity(items.len());
         for (i, item) in items.iter().enumerate() {
-            items_toyoda.push(
-                ItemInfo {
-                    j: i,
-                    e: { 
-                        //denominator from (9.35)
-                        let mut sum = 0.0;
-                        for r in 0..S {
-                            sum += item.weights[r] * (d_diff[r] - largest_neg);
-                        }
+            items_toyoda.push(ItemInfo {
+                j: i,
+                e: {
+                    //denominator from (9.35)
+                    let mut sum = 0.0;
+                    for r in 0..S {
+                        sum += item.weights[r] * (d_diff[r] - largest_neg);
+                    }
 
-                        item.value/sum
-                    },
+                    item.value / sum
+                },
 
-                    x: false,
-                }
-            );
+                x: false,
+            });
         }
 
         //create array of knapsack data
         for (i, knapsack) in knapsacks.iter().enumerate() {
-            knapsack_order.push(
-                KnapsackInfo {
-                    j: i,
-                    s: {
-                        let mut score = 0.0;
-                        for r in 0..S {
-                            score += (knapsack.capacity[r] - 
-                                      knapsack.weights()[r]) * d_rating[r];
-                        }
+            knapsack_order.push(KnapsackInfo {
+                j: i,
+                s: {
+                    let mut score = 0.0;
+                    for r in 0..S {
+                        score += (knapsack.capacity[r] - knapsack.weights()[r]) * d_rating[r];
+                    }
 
-                        score
-                    },
-                }
-            );
+                    score
+                },
+            });
         }
 
         //sort item_order and knapsack_order by increasing efficiency and score respectively
@@ -106,15 +98,17 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
         'item_set: while let Some(item_info) = items_toyoda.pop() {
             for r in 0..S {
                 let new_d_weight = k_w[r] + items[item_info.j].weights[r];
-                if new_d_weight > 
-                knapsacks[knapsack_order[k_i].j].capacity[r] - 
-                knapsacks[knapsack_order[k_i].j].weights()[r] { //item does not fit
+                if new_d_weight
+                    > knapsacks[knapsack_order[k_i].j].capacity[r]
+                        - knapsacks[knapsack_order[k_i].j].weights()[r]
+                {
+                    //item does not fit
                     for rf in r..S {
-                        if items[item_info.j].weights[rf] > 
-                        knapsacks[knapsack_order[k_i].j]
-                            .capacity[rf] - 
-                        knapsacks[knapsack_order[k_i].j]
-                            .weights()[rf] { //item alone exceeds capacity
+                        if items[item_info.j].weights[rf]
+                            > knapsacks[knapsack_order[k_i].j].capacity[rf]
+                                - knapsacks[knapsack_order[k_i].j].weights()[rf]
+                        {
+                            //item alone exceeds capacity
                             excess_stack.push(ItemInfo {
                                 j: item_info.j,
                                 e: 0.0,
@@ -191,10 +185,9 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
                     break;
                 }
 
-                let q1 = cumulative_weights[r] + 
-                         items[item_info.j].weights[r];
-                let q2 = capacity_d_sum[r] - (cumulative_weights[r] +
-                    items[item_info.j].weights[r]);
+                let q1 = cumulative_weights[r] + items[item_info.j].weights[r];
+                let q2 =
+                    capacity_d_sum[r] - (cumulative_weights[r] + items[item_info.j].weights[r]);
                 if q2 <= 0.0 {
                     item_info.e = 0.0;
                     continue 'item;
@@ -212,7 +205,7 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
                     v = v_t;
                 }
             }
-            
+
             item_info.e = items[item_info.j].value / v;
         }
 
@@ -220,11 +213,10 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
         for knapsack_info in knapsack_order.iter_mut() {
             let mut score = 0.0;
             for r in 0..S {
-                score += knapsacks[knapsack_info.j].capacity[r] -
-                         knapsacks[knapsack_info.j].weights()[r] * 
-                         d_rating[r];
+                score += knapsacks[knapsack_info.j].capacity[r]
+                    - knapsacks[knapsack_info.j].weights()[r] * d_rating[r];
             }
-            
+
             knapsack_info.s = score;
         }
 
@@ -239,9 +231,11 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
         k_w = [0.0; S];
         'item: for item_info in items_loulou.iter_mut() {
             for r in 0..S {
-                if items[item_info.j].weights[r] + k_w[r] > 
-                knapsacks[knapsack_order[k_i].j].capacity[r] -
-                knapsacks[knapsack_order[k_i].j].weights()[r] { //item is split item
+                if items[item_info.j].weights[r] + k_w[r]
+                    > knapsacks[knapsack_order[k_i].j].capacity[r]
+                        - knapsacks[knapsack_order[k_i].j].weights()[r]
+                {
+                    //item is split item
                     item_info.x = false;
                     split_value += items[item_info.j].value;
                     k_w = [0.0; S];
@@ -267,14 +261,11 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
         'item: for item_info in items_loulou {
             if value > split_value {
                 if item_info.x {
-                    while !knapsacks[knapsack_order[k_i].j]
-                    .add(
-                        Item::<f64, S> {
-                            value: items[item_info.j].value,
-                            weights: items[item_info.j].weights,
-                            quantity: 1.0,
-                        }
-                    ) {
+                    while !knapsacks[knapsack_order[k_i].j].add(Item::<f64, S> {
+                        value: items[item_info.j].value,
+                        weights: items[item_info.j].weights,
+                        quantity: 1.0,
+                    }) {
                         k_i += 1;
 
                         if k_i == knapsacks.len() {
@@ -284,13 +275,11 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
                 }
             } else {
                 if !item_info.x {
-                    knapsacks[knapsack_order[k_i].j].add(
-                        Item::<f64, S> {
-                            value: items[item_info.j].value,
-                            weights: items[item_info.j].weights,
-                            quantity: 1.0,
-                        }
-                    );
+                    knapsacks[knapsack_order[k_i].j].add(Item::<f64, S> {
+                        value: items[item_info.j].value,
+                        weights: items[item_info.j].weights,
+                        quantity: 1.0,
+                    });
                     k_i += 1;
                 }
             }

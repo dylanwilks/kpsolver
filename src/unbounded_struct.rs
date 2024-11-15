@@ -1,17 +1,14 @@
 use crate::compatible_problem_type_trait::UnboundedCompatibility;
 
 use std::cmp::Ordering;
-use std::ops::{
-    Add, Sub, Mul, 
-    AddAssign, SubAssign 
-};
+use std::ops::{Add, AddAssign, Mul, Sub, SubAssign};
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Default, Clone, Copy)]
 pub struct unbounded;
 impl UnboundedCompatibility for unbounded {
-    fn null() -> Option<Self> { 
-        None 
+    fn null() -> Option<Self> {
+        None
     }
 
     fn is_unbounded() -> bool {
@@ -43,8 +40,9 @@ impl<T> SubAssign<T> for unbounded {
     fn sub_assign(&mut self, _rhs: T) {}
 }
 
-impl<T> Mul<T> for unbounded 
-where T: UnboundedCompatibility + std::cmp::PartialEq,
+impl<T> Mul<T> for unbounded
+where
+    T: UnboundedCompatibility + std::cmp::PartialEq,
 {
     type Output = Option<unbounded>;
 
@@ -60,7 +58,8 @@ where T: UnboundedCompatibility + std::cmp::PartialEq,
 }
 
 impl<T> PartialEq<T> for unbounded
-where T: UnboundedCompatibility,
+where
+    T: UnboundedCompatibility,
 {
     fn eq(&self, _rhs: &T) -> bool {
         if T::is_unbounded() {
@@ -74,7 +73,8 @@ where T: UnboundedCompatibility,
 impl Eq for unbounded {}
 
 impl<T> PartialOrd<T> for unbounded
-where T: UnboundedCompatibility,
+where
+    T: UnboundedCompatibility,
 {
     fn partial_cmp(&self, _rhs: &T) -> Option<Ordering> {
         if T::is_unbounded() {
@@ -84,7 +84,6 @@ where T: UnboundedCompatibility,
         }
     }
 }
-
 
 #[cfg(test)]
 mod test {

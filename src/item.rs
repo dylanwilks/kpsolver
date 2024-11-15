@@ -1,20 +1,13 @@
-use crate::compatible_problem_type_trait::{
-    CompatibleProblemType, UnboundedCompatibility
-};
+use crate::compatible_problem_type_trait::{CompatibleProblemType, UnboundedCompatibility};
+use crate::knapsack::{BinaryProblemKnapsacks, ProblemKnapsacks};
+use crate::problem_type::{BinaryProblem, BinaryProblemMut, BoundedProblem, BoundedProblemMut};
 use crate::unbounded_struct::unbounded;
-use crate::knapsack::{ 
-    ProblemKnapsacks, BinaryProblemKnapsacks
-};
-use crate::problem_type::{
-    BoundedProblem, BoundedProblemMut, 
-    BinaryProblem, BinaryProblemMut
-};
 
 use indexmap::IndexMap;
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Item<T, const S: usize, N = T> 
-where 
+pub struct Item<T, const S: usize, N = T>
+where
     T: CompatibleProblemType,
     N: UnboundedCompatibility,
 {
@@ -23,19 +16,15 @@ where
     pub quantity: N,
 }
 
-pub type BinaryItem<T, const S: usize> = Item::<T, S>;
-pub type UnboundedItem<T, const S: usize> = Item::<T, S, unbounded>;
+pub type BinaryItem<T, const S: usize> = Item<T, S>;
+pub type UnboundedItem<T, const S: usize> = Item<T, S, unbounded>;
 
 impl<T, const S: usize, N> Item<T, S, N>
-where 
+where
     T: CompatibleProblemType,
     N: UnboundedCompatibility,
 {
-    pub fn new(
-        value: f64,
-        weights: [T; S],
-        quantity: N,
-    ) -> Self {
+    pub fn new(value: f64, weights: [T; S], quantity: N) -> Self {
         Self {
             value: value,
             weights: weights,
@@ -44,12 +33,17 @@ where
     }
 
     pub fn to_key(&self) -> (u64, [u64; S]) {
-        (self.value.to_bits() as u64, self.weights.map(|x| T::type_to_key(x)))
+        (
+            self.value.to_bits() as u64,
+            self.weights.map(|x| T::type_to_key(x)),
+        )
     }
 }
 
 impl<T, const S: usize> Item<T, S>
-where T: CompatibleProblemType, {
+where
+    T: CompatibleProblemType,
+{
     pub fn binary(value: f64, weights: [T; S]) -> Self {
         Self {
             value: value,
@@ -60,10 +54,13 @@ where T: CompatibleProblemType, {
 }
 
 impl<T, const S: usize> Item<T, S>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
-    pub fn to_generic<N>(self) -> Item<N, S> 
-    where N: CompatibleProblemType + From<T>, {
+    pub fn to_generic<N>(self) -> Item<N, S>
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         Item::<N, S> {
             value: self.value,
             weights: self.weights.map(|x| N::from(x)),
@@ -73,10 +70,13 @@ where T: CompatibleProblemType,
 }
 
 impl<T, const S: usize> UnboundedItem<T, S>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
-    pub fn to_generic<N>(&self) -> UnboundedItem<N, S> 
-    where N: CompatibleProblemType + From<T>, {
+    pub fn to_generic<N>(&self) -> UnboundedItem<N, S>
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         UnboundedItem::<N, S> {
             value: self.value,
             weights: self.weights.map(|x| N::from(x)),
@@ -97,7 +97,7 @@ where
 pub type UnboundedProblemItems<T, const S: usize> = ProblemItems<T, S, unbounded>;
 
 impl<T, const S: usize, N> ProblemItems<T, S, N>
-where 
+where
     T: CompatibleProblemType,
     N: UnboundedCompatibility + std::ops::AddAssign,
 {
@@ -108,15 +108,18 @@ where
     }
 
     pub fn get_item(&self, key: (f64, [T; S])) -> Option<&Item<T, S, N>> {
-        self.items.get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .get(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn get_item_mut(&mut self, key: (f64, [T; S])) -> Option<&mut Item<T, S, N>> {
-        self.items.get_mut(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .get_mut(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn get_index_of(&self, key: (f64, [T; S])) -> Option<usize> {
-        self.items.get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .get_index_of(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn add(&mut self, item: Item<T, S, N>) {
@@ -128,7 +131,8 @@ where
     }
 
     pub fn remove_item(&mut self, key: (f64, [T; S])) -> Option<Item<T, S, N>> {
-        self.items.shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
+        self.items
+            .shift_remove(&(key.0.to_bits() as u64, key.1.map(|x| T::type_to_key(x))))
     }
 
     pub fn remove_index(&mut self, index: usize) -> Option<Item<T, S, N>> {
@@ -150,8 +154,9 @@ where
         self.items.values()
     }
 
-    pub fn iter_mut<'a>(&'a mut self) 
-    -> indexmap::map::ValuesMut<'a, (u64, [u64; S]), Item<T, S, N>> {
+    pub fn iter_mut<'a>(
+        &'a mut self,
+    ) -> indexmap::map::ValuesMut<'a, (u64, [u64; S]), Item<T, S, N>> {
         self.items.values_mut()
     }
 
@@ -162,21 +167,25 @@ where
         }
     }
 
-    pub fn insert_mut_into<'a>(&'a mut self, knapsacks: ProblemKnapsacks<T, S>)
-    -> BoundedProblemMut<'a, T, S, N> {
+    pub fn insert_mut_into<'a>(
+        &'a mut self,
+        knapsacks: ProblemKnapsacks<T, S>,
+    ) -> BoundedProblemMut<'a, T, S, N> {
         BoundedProblemMut::<'a, T, S, N> {
             items: self,
             knapsacks: knapsacks,
         }
     }
-
 }
 
-impl<T, const S: usize> ProblemItems<T, S> 
-where T: CompatibleProblemType,
+impl<T, const S: usize> ProblemItems<T, S>
+where
+    T: CompatibleProblemType,
 {
     pub fn to_generic<N>(self) -> ProblemItems<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut items = ProblemItems::<N, S>::new();
         for item in self {
             items.add(item.to_generic::<N>());
@@ -187,10 +196,13 @@ where T: CompatibleProblemType,
 }
 
 impl<T, const S: usize> UnboundedProblemItems<T, S>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
     pub fn to_generic<N>(self) -> UnboundedProblemItems<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut items = UnboundedProblemItems::<N, S>::new();
         for item in self {
             items.add(item.to_generic::<N>());
@@ -200,7 +212,7 @@ where T: CompatibleProblemType,
     }
 }
 
-impl<T, const S: usize, N> IntoIterator for ProblemItems<T, S, N> 
+impl<T, const S: usize, N> IntoIterator for ProblemItems<T, S, N>
 where
     T: CompatibleProblemType,
     N: UnboundedCompatibility,
@@ -213,7 +225,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize, N> IntoIterator for &'a ProblemItems<T, S, N> 
+impl<'a, T, const S: usize, N> IntoIterator for &'a ProblemItems<T, S, N>
 where
     T: CompatibleProblemType,
     N: UnboundedCompatibility,
@@ -226,7 +238,7 @@ where
     }
 }
 
-impl<'a, T, const S: usize, N> IntoIterator for &'a mut ProblemItems<T, S, N> 
+impl<'a, T, const S: usize, N> IntoIterator for &'a mut ProblemItems<T, S, N>
 where
     T: CompatibleProblemType,
     N: UnboundedCompatibility,
@@ -263,18 +275,18 @@ where
 
 #[derive(Clone)]
 pub struct BinaryProblemItems<T, const S: usize>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
     pub(crate) items: Vec<Item<T, S>>,
 }
 
 impl<T, const S: usize> BinaryProblemItems<T, S>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
     pub fn new() -> Self {
-        BinaryProblemItems::<T, S> {
-            items: Vec::new(),
-        }
+        BinaryProblemItems::<T, S> { items: Vec::new() }
     }
 
     pub fn add(&mut self, item: Item<T, S>) {
@@ -301,7 +313,7 @@ where T: CompatibleProblemType,
         self.items.iter()
     }
 
-    pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, Item<T ,S>> {
+    pub fn iter_mut<'a>(&'a mut self) -> std::slice::IterMut<'a, Item<T, S>> {
         self.items.iter_mut()
     }
 
@@ -312,8 +324,10 @@ where T: CompatibleProblemType,
         }
     }
 
-    pub fn insert_mut_into<'a>(&'a mut self, knapsacks: BinaryProblemKnapsacks<T, S>)
-    -> BinaryProblemMut<'a, T, S> {
+    pub fn insert_mut_into<'a>(
+        &'a mut self,
+        knapsacks: BinaryProblemKnapsacks<T, S>,
+    ) -> BinaryProblemMut<'a, T, S> {
         BinaryProblemMut::<'a, T, S> {
             items: self,
             knapsacks: knapsacks,
@@ -321,7 +335,9 @@ where T: CompatibleProblemType,
     }
 
     pub fn to_generic<N>(self) -> BinaryProblemItems<N, S>
-    where N: CompatibleProblemType + From<T>, {
+    where
+        N: CompatibleProblemType + From<T>,
+    {
         let mut items = BinaryProblemItems::<N, S>::new();
         for item in self {
             items.add(item.to_generic::<N>());
@@ -331,8 +347,9 @@ where T: CompatibleProblemType,
     }
 }
 
-impl<T, const S: usize> IntoIterator for BinaryProblemItems<T, S> 
-where T: CompatibleProblemType,
+impl<T, const S: usize> IntoIterator for BinaryProblemItems<T, S>
+where
+    T: CompatibleProblemType,
 {
     type Item = Item<T, S>;
     type IntoIter = std::vec::IntoIter<Item<T, S>>;
@@ -342,8 +359,9 @@ where T: CompatibleProblemType,
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a BinaryProblemItems<T, S> 
-where T: CompatibleProblemType,
+impl<'a, T, const S: usize> IntoIterator for &'a BinaryProblemItems<T, S>
+where
+    T: CompatibleProblemType,
 {
     type Item = <std::slice::Iter<'a, Item<T, S>> as Iterator>::Item;
     type IntoIter = std::slice::Iter<'a, Item<T, S>>;
@@ -353,8 +371,9 @@ where T: CompatibleProblemType,
     }
 }
 
-impl<'a, T, const S: usize> IntoIterator for &'a mut BinaryProblemItems<T, S> 
-where T: CompatibleProblemType,
+impl<'a, T, const S: usize> IntoIterator for &'a mut BinaryProblemItems<T, S>
+where
+    T: CompatibleProblemType,
 {
     type Item = <std::slice::IterMut<'a, Item<T, S>> as Iterator>::Item;
     type IntoIter = std::slice::IterMut<'a, Item<T, S>>;
@@ -365,7 +384,8 @@ where T: CompatibleProblemType,
 }
 
 impl<T, const S: usize> std::ops::Index<usize> for BinaryProblemItems<T, S>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
     type Output = Item<T, S>;
 
@@ -375,7 +395,8 @@ where T: CompatibleProblemType,
 }
 
 impl<T, const S: usize> std::ops::IndexMut<usize> for BinaryProblemItems<T, S>
-where T: CompatibleProblemType,
+where
+    T: CompatibleProblemType,
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.items[index]

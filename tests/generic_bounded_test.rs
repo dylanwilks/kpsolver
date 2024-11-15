@@ -1,14 +1,11 @@
-#[allow(unused_imports)]
-use kpsolver::{bounded_solvers, binary_solvers};
 use generic_data::Problems;
+#[allow(unused_imports)]
+use kpsolver::{binary_solvers, bounded_solvers};
 
 #[macro_use]
 mod generic_data;
 
-#[cfg(all(
-    feature = "cplex",
-    feature = "highs",
-))]
+#[cfg(all(feature = "cplex", feature = "highs",))]
 selective_tests! {
     fn bounded_dynamic_test(bounded_solvers::Dynamic, <f64 as PartialEq>::eq, 1.0) {
         DEFAULT: {
@@ -110,9 +107,7 @@ selective_tests! {
     }
 }
 
-#[cfg(all(
-    feature = "cplex",
-))]
+#[cfg(all(feature = "cplex",))]
 selective_tests! {
     fn bounded_generalized_greedy_test(bounded_solvers::GeneralizedGreedy, <f64 as PartialOrd>::ge, 0.5) {
         DEFAULT: {
@@ -149,9 +144,7 @@ selective_tests! {
     }
 }
 
-#[cfg(all(
-    feature = "highs",
-))]
+#[cfg(all(feature = "highs",))]
 selective_tests! {
     fn bounded_theoretical_greedy_test(bounded_solvers::TheoreticalGreedy, <f64 as PartialOrd>::ge, 0.5) {
         DEFAULT: {
