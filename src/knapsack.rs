@@ -261,6 +261,17 @@ where
         value
     }
 
+    pub fn weights(&self) -> [T; S] {
+        let mut weights = [<T as Default>::default(); S];
+        for knapsack in &self.knapsacks {
+            for r in 0..S {
+                weights[r] += knapsack.weights()[r];
+            }
+        }
+
+        weights
+    }
+
     pub fn add(&mut self, knapsack: Knapsack<T, S>) {
         self.knapsacks.push(knapsack);
     }
@@ -545,6 +556,17 @@ where
         }
 
         value
+    }
+
+    pub fn weights(&self) -> [T; S] {
+        let mut weights = [<T as Default>::default(); S];
+        for knapsack in &self.knapsacks {
+            for r in 0..S {
+                weights[r] += knapsack.weights()[r];
+            }
+        }
+
+        weights
     }
 
     pub fn add(&mut self, knapsack: BinaryKnapsack<T, S>) {
