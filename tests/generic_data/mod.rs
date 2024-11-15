@@ -7,6 +7,7 @@ pub mod default_simple;
 pub mod default_multi_constraint;
 #[macro_use]
 pub mod default_multi_knapsack;
+pub mod random_test;
 
 #[allow(dead_code)]
 #[derive(PartialEq)]
