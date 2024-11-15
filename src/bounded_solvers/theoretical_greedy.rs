@@ -25,7 +25,9 @@ impl<const S: usize> BoundedSolver<f64, S> for TheoreticalGreedy {
         for (i, item) in items.iter().enumerate() {
             let mut pos = [0.0; S];
             for r in 0..S {
-                pos[r] = item.weights[r] / item.value;
+                if item.weights[r] != 0.0 || item.value != 0.0 {
+                    pos[r] = item.weights[r] / item.value;
+                }
             }
 
             item_positions.push(ItemPos::<S> {
