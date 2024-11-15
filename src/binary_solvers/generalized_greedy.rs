@@ -193,9 +193,9 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
 
                 let q1 = cumulative_weights[r] + 
                          items[item_info.j].weights[r];
-                let q2 = capacity_d_sum[r] - cumulative_weights[r] - 
-                    items[item_info.j].weights[r];
-                if q2 == 0.0 {
+                let q2 = capacity_d_sum[r] - (cumulative_weights[r] +
+                    items[item_info.j].weights[r]);
+                if q2 <= 0.0 {
                     item_info.e = 0.0;
                     continue 'item;
                 }
@@ -224,7 +224,7 @@ impl<const S: usize> BinarySolver<f64, S> for GeneralizedGreedy {
                          knapsacks[knapsack_info.j].weights()[r] * 
                          d_rating[r];
             }
-
+            
             knapsack_info.s = score;
         }
 

@@ -204,7 +204,7 @@ impl<const S: usize> BoundedSolver<f64, S> for GeneralizedGreedy {
                          items[item_info.j].weights[r];
                 let q2 = capacity_d_sum[r] - cumulative_weights[r] - 
                     items[item_info.j].weights[r];
-                if q2 == 0.0 {
+                if q2 <= 0.0 {
                     item_info.e = 0.0;
                     continue 'item;
                 }
