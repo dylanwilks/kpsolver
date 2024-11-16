@@ -61,7 +61,7 @@ $$
 \end{aligned}
 $$
 
-where:
+where:\
 $p_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;profit of item $j$\
 $x_{ij}$    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ in knapsack $i$\
 $w_{kj}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th weight of item $j$\
