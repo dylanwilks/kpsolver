@@ -36,17 +36,17 @@ So far this library implements 3 algorithms described in papers/articles and wra
 
 ### Dynamic
 A dynamic programming solver for the MDKP variant. The implementation extends the algorithm described [here](https://en.wikipedia.org/wiki/Knapsack_problem#0-1_knapsack_problem).
-You can find the exact implementation of the binary variant in [`dynamic.rs`](https://github.com/dylanwilks/kpsolver/blob/main/src/binary_solvers/dynamic.rs).\\
+You can find the exact implementation of the binary variant in [`dynamic.rs`](https://github.com/dylanwilks/kpsolver/blob/main/src/binary_solvers/dynamic.rs).\
 Can only take in items and knapsacks of type `u32`. If more than 1 knapsack is provided it will only modify the first.
 
 ### Generalized Greedy
 Takes a hybrid approach of the MDKP and MKP generalized greedy algorithms featured in pages 256-259 and 299 respectively in the book [Knapsack Problems](https://link.springer.com/book/10.1007/978-3-540-24777-7). 
-The implementation of the binary variant is in [`generalized_greedy.rs`](https://github.com/dylanwilks/kpsolver/blob/main/src/binary_solvers/generalized_greedy.rs).\\
+The implementation of the binary variant is in [`generalized_greedy.rs`](https://github.com/dylanwilks/kpsolver/blob/main/src/binary_solvers/generalized_greedy.rs).\
 Can only take in items and knapsacks of type `f64`.
 
 ### Theoretical Greedy
 Implements the algorithm described in this [article](https://www.sciencedirect.com/science/article/pii/0166218X9390051O) to solve MDKPs. It is more accurate than generalized greedy but slower.
-Binary variant implementation is in [`theoretical_greedy.rs`](https://github.com/dylanwilks/kpsolver/blob/main/src/binary_solvers/theoretical_greedy.rs).\\
+Binary variant implementation is in [`theoretical_greedy.rs`](https://github.com/dylanwilks/kpsolver/blob/main/src/binary_solvers/theoretical_greedy.rs).\
 Can only take in items and knapsacks of type `f64`. If more than 1 knapsack is provided it will only modify the first.
 
 ### CBC, HiGHS and CPLEX
@@ -62,11 +62,11 @@ $$
 $$
 
 where:
-$p_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;profit of item $j$\\
-$x_{ij}$    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ in knapsack $i$\\
-$w_{kj}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th weight of item $j$\\
-$c_{ik}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th capacity of knapsack $i$\\
-$q_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ &nbsp;&nbsp;($q_j = 1$ in the binary case)\\
+$p_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;profit of item $j$\
+$x_{ij}$    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ in knapsack $i$\
+$w_{kj}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th weight of item $j$\
+$c_{ik}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th capacity of knapsack $i$\
+$q_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ &nbsp;&nbsp;($q_j = 1$ in the binary case)\
 
 To use these solvers these features need to be enabled in your `Cargo.toml`:
 
