@@ -218,7 +218,7 @@ where
     type Output = <N as UnboundedSolver<T, S>>::Output;
 
     fn solve(self, problem: BoundedProblem<T, S>) -> Self::Output {
-        let unboundeded_problem = UnboundedProblem::<T, S> {
+        let unbounded_problem = UnboundedProblem::<T, S> {
             items: {
                 let mut problem_items = UnboundedProblemItems::<T, S>::new();
                 for item in problem.items {
@@ -244,6 +244,6 @@ where
             },
         };
 
-        <N as UnboundedSolver<T, S>>::solve(self, unboundeded_problem)
+        <N as UnboundedSolver<T, S>>::solve(self, unbounded_problem)
     }
 }
