@@ -64,9 +64,9 @@ $$
 where:\
 $p_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;profit of item $j$\
 $x_{ij}$    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ in knapsack $i$\
-$w_{kj}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th weight of item $j$\
-$c_{ik}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$k$-th capacity of knapsack $i$\
-$q_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ &nbsp;&nbsp;($q_j = 1$ in the binary case)\
+$w_{kj}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $k$-th weight of item $j$\
+$c_{ik}$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $k$-th capacity of knapsack $i$\
+$q_j$     	 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;quantity of item $j$ &nbsp;&nbsp;($q_j = 1$ in the binary case)
 
 To use these solvers these features need to be enabled in your `Cargo.toml`:
 
